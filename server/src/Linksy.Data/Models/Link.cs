@@ -13,6 +13,7 @@ public class Link
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
 
+    public string OriginalUrl { get; set; } = null!;
     public string ShortCode { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; }
