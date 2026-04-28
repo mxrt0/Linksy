@@ -21,8 +21,11 @@ public class LinkConfiguration : IEntityTypeConfiguration<Link>
         builder
             .Property(l => l.ShortCode)
             .HasMaxLength(ShortCodeMaxLength)
-            .IsRequired();  
-        
+            .IsRequired();
+
+        builder
+            .HasIndex(l => l.ShortCode)
+            .IsUnique();
 
     }
 }
