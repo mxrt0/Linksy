@@ -1,5 +1,9 @@
 <Solution>
-  <Folder Name="/src/">
+  <Folder Name="/API/">
     <Project Path="src/Linksy.Api/Linksy.Api.csproj" />
   </Folder>
+  <Folder Name="/Data/">
+    <Project Path="src/Linksy.Data/Linksy.Data.csproj" Id="6eea9213-dfb4-4bba-a578-a3682a25d371" />
+  </Folder>
+  <Folder Name="/src/" />
 </Solution>
