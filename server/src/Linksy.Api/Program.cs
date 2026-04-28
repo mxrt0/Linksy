@@ -44,6 +44,8 @@ builder.Services.AddAuthentication(options =>
     var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] 
         ?? throw new InvalidOperationException("JWT key is not configured."));
 
+    options.MapInboundClaims = false;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -67,6 +69,7 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+
 });
 
 builder.Services.AddAuthorization();
