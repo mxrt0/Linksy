@@ -16,6 +16,38 @@ public class AuthService(UserManager<ApplicationUser> userManager) : IAuthServic
         return await userManager.FindByNameAsync(username);
     }
 
+    public async Task<AuthResult> LoginAsync(LoginRequest request)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email);
+
+        if (user is null)
+        {
+            return new AuthResult
+            {
+                Succeeded = false,
+                Errors = new[] { "Invalid email." }
+            };
+        }
+
+        var passwordValid = await userManager.CheckPasswordAsync(user, request.Password);
+
+        if (!passwordValid)
+        {
+            return new AuthResult
+            {
+                Succeeded = false,
+                Errors = new[] { "Invalid password." }
+            };
+        }
+
+        return new AuthResult
+        {
+            Succeeded = true,
+            UserId = user.Id,
+            Username = user.UserName
+        };
+    }
+
     public async Task<AuthResult> RegisterAsync(RegisterRequest request)
     {
        var user = new ApplicationUser

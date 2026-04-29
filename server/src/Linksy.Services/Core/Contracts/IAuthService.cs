@@ -10,5 +10,6 @@ namespace Linksy.Services.Core.Contracts;
 public interface IAuthService
 {
     Task<AuthResult> RegisterAsync(RegisterRequest request);
+    Task<AuthResult> LoginAsync(LoginRequest request);
     Task<ApplicationUser?> GetUserByNameAsync(string username);
 }

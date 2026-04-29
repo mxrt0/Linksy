@@ -14,6 +14,30 @@ public class AuthController(
     IJwtService jwtService
 ) : BaseController
 {
+    [HttpPost("login")]
+    public async Task<ActionResult> Login([FromBody] LoginRequest request)
+    {
+        var result = await authService.LoginAsync(request);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        var newJwt = jwtService.GenerateToken(result.UserId!, result.Username!);
+
+        Response.Cookies.Append("jwt", newJwt, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(config.GetValue<double>("Jwt:ExpiryMinutes"))
+        });
+
+        return Ok(new AuthResponse
+        {
+            Username = result.Username!
+        });
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -32,6 +56,9 @@ public class AuthController(
             Expires = DateTime.UtcNow.AddMinutes(config.GetValue<double>("Jwt:ExpiryMinutes"))
         });
 
-        return Ok();
+        return Ok(new AuthResponse
+        {
+            Username = request.Username
+        });
     }
 }
