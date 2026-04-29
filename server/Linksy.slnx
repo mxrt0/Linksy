@@ -5,5 +5,8 @@
   <Folder Name="/Data/">
     <Project Path="src/Linksy.Data/Linksy.Data.csproj" Id="6eea9213-dfb4-4bba-a578-a3682a25d371" />
   </Folder>
+  <Folder Name="/Services/">
+    <Project Path="src/Linksy.Services/Linksy.Services.csproj" Id="81f3090a-12c9-4329-8687-b4bf6977b465" />
+  </Folder>
   <Folder Name="/src/" />
 </Solution>
