@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Linksy.Data\Linksy.Data.csproj" />
+    <ProjectReference Include="..\Linksy.Services\Linksy.Services.csproj" />
   </ItemGroup>
 
 </Project>
