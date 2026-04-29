@@ -19,10 +19,9 @@ public class AuthController(
     [Authorize]
     public async Task<ActionResult> Me()
     {
-        var userId = GetUserId()!;
         var username = GetUserName()!;
 
-        return Ok(new { userId, username });
+        return Ok(new { username });
     }
 
     [HttpPost("login")]
