@@ -1,5 +1,6 @@
 ﻿using Linksy.Services.Core.Contracts;
 using Linksy.Services.DTOs.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,6 +15,16 @@ public class AuthController(
     IJwtService jwtService
 ) : BaseController
 {
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult> Me()
+    {
+        var userId = GetUserId()!;
+        var username = GetUserName()!;
+
+        return Ok(new { userId, username });
+    }
+
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
