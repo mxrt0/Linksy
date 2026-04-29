@@ -1,5 +1,7 @@
 using Linksy.Data;
 using Linksy.Data.Models;
+using Linksy.Services.Core;
+using Linksy.Services.Core.Contracts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -15,9 +17,29 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("Linksy.Data")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    var identitySettings = builder.Configuration.GetSection("Identity");
+
+    options.Password.RequireDigit = identitySettings.GetValue<bool>("Password:RequireDigit");
+    options.Password.RequireUppercase = identitySettings.GetValue<bool>("Password:RequireUppercase");
+    options.Password.RequireLowercase = identitySettings.GetValue<bool>("Password:RequireLowercase");
+    options.Password.RequireNonAlphanumeric = identitySettings.GetValue<bool>("Password:RequireNonAlphanumeric");
+    options.Password.RequiredLength = identitySettings.GetValue<int>("Password:RequiredLength");
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(identitySettings.GetValue<int>("Lockout:DefaultLockoutMinutes"));
+    options.Lockout.MaxFailedAccessAttempts = identitySettings.GetValue<int>("Lockout:MaxFailedAccessAttempts");
+
+    options.SignIn.RequireConfirmedAccount = identitySettings.GetValue<bool>("SignIn:RequireConfirmedAccount");
+    options.SignIn.RequireConfirmedEmail = identitySettings.GetValue<bool>("SignIn:RequireConfirmedEmail");
+
+    options.User.RequireUniqueEmail = identitySettings.GetValue<bool>("User:RequireUniqueEmail");
+})
+  .AddEntityFrameworkStores<ApplicationDbContext>()
+  .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] 
     ?? throw new InvalidOperationException("CORS allowed origin is not configured.");
