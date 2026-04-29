@@ -61,4 +61,11 @@ public class AuthController(
             Username = request.Username
         });
     }
+
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout()
+    {
+        Response.Cookies.Delete("jwt");
+        return Ok();
+    }
 }
