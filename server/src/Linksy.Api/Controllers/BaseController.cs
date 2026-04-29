@@ -10,4 +10,5 @@ namespace Linksy.Api.Controllers;
 public abstract class BaseController : ControllerBase
 {
     protected string? GetUserId() => User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+    protected string? GetUserName() => User.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
 }
