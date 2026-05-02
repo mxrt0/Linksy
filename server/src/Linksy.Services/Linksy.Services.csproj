@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Linksy.Common\Linksy.Common.csproj" />
     <ProjectReference Include="..\Linksy.Data\Linksy.Data.csproj" />
   </ItemGroup>
 
