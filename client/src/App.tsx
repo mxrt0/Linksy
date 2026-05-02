@@ -5,6 +5,7 @@ import './index.css'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { AppLayout } from './layout/AppLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { CreateLinkPage } from './pages/links/CreateLinkPage'
 
 function App() {
 
@@ -23,6 +24,7 @@ function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/links/new" element={<CreateLinkPage />} />
       </Route>
       
       {/* <Route path="*" element={<NotFoundPage />} /> */}

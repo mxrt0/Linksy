@@ -118,7 +118,7 @@ export function LoginPage() {
           {errors.length > 0 && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5">
               {errors.map((err, i) => (
-                <p key={i} className="text-red-400 text-sm">
+                <p key={i} className="text-red-400 text-sm text-center">
                   {err}
                 </p>
               ))}
