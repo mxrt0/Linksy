@@ -9,4 +9,5 @@
     <Project Path="src/Linksy.Services/Linksy.Services.csproj" Id="81f3090a-12c9-4329-8687-b4bf6977b465" />
   </Folder>
   <Folder Name="/src/" />
+  <Project Path="src/Linksy.Common/Linksy.Common.csproj" Id="5865514b-e53e-4ab6-a235-e571870e98b1" />
 </Solution>

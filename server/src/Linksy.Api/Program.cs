@@ -1,3 +1,4 @@
+using Linksy.Api.Converters;
 using Linksy.Data;
 using Linksy.Data.Models;
 using Linksy.Services.Core;
@@ -96,7 +97,15 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions
+            .Converters
+            .Add(new LinkExpiryJsonConverter());
+    });
 
 var app = builder.Build();
 
