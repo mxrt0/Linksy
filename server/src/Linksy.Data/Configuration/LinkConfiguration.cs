@@ -24,7 +24,7 @@ public class LinkConfiguration : IEntityTypeConfiguration<Link>
             .IsRequired();
 
         builder
-            .HasIndex(l => l.ShortCode)
+            .HasIndex(l => new { l.UserId, l.ShortCode })
             .IsUnique();
 
     }
