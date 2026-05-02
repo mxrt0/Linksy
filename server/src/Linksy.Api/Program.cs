@@ -1,5 +1,10 @@
+using Linksy.Api.Converters;
 using Linksy.Data;
 using Linksy.Data.Models;
+using Linksy.Data.Repositories;
+using Linksy.Data.Repositories.Contracts;
+using Linksy.Services.Core;
+using Linksy.Services.Core.Contracts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -7,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-
+// TODO: Add reachability check for passed URLs
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -15,9 +20,32 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("Linksy.Data")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    var identitySettings = builder.Configuration.GetSection("Identity");
+
+    options.Password.RequireDigit = identitySettings.GetValue<bool>("Password:RequireDigit");
+    options.Password.RequireUppercase = identitySettings.GetValue<bool>("Password:RequireUppercase");
+    options.Password.RequireLowercase = identitySettings.GetValue<bool>("Password:RequireLowercase");
+    options.Password.RequireNonAlphanumeric = identitySettings.GetValue<bool>("Password:RequireNonAlphanumeric");
+    options.Password.RequiredLength = identitySettings.GetValue<int>("Password:RequiredLength");
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(identitySettings.GetValue<int>("Lockout:DefaultLockoutMinutes"));
+    options.Lockout.MaxFailedAccessAttempts = identitySettings.GetValue<int>("Lockout:MaxFailedAccessAttempts");
+
+    options.SignIn.RequireConfirmedAccount = identitySettings.GetValue<bool>("SignIn:RequireConfirmedAccount");
+    options.SignIn.RequireConfirmedEmail = identitySettings.GetValue<bool>("SignIn:RequireConfirmedEmail");
+
+    options.User.RequireUniqueEmail = identitySettings.GetValue<bool>("User:RequireUniqueEmail");
+})
+  .AddEntityFrameworkStores<ApplicationDbContext>()
+  .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<ILinkRepository, LinkRepository>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ILinkService, LinkService>();    
 
 var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] 
     ?? throw new InvalidOperationException("CORS allowed origin is not configured.");
@@ -28,7 +56,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigin)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -43,6 +72,8 @@ builder.Services.AddAuthentication(options =>
 
     var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] 
         ?? throw new InvalidOperationException("JWT key is not configured."));
+
+    options.MapInboundClaims = false;
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -67,10 +98,19 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions
+            .Converters
+            .Add(new LinkExpiryJsonConverter());
+    });
 
 var app = builder.Build();
 

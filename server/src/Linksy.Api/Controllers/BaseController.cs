@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Linksy.Api.Controllers;
@@ -8,5 +9,6 @@ namespace Linksy.Api.Controllers;
 [ApiController]
 public abstract class BaseController : ControllerBase
 {
-    protected string? GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    protected string? GetUserId() => User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+    protected string? GetUserName() => User.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
 }
