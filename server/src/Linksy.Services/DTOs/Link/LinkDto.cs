@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Linksy.Services.DTOs.Link;
 
-internal class LinkDto
+public class LinkDto
 {
     public string ShortCode { get; set; } = null!;
     public string OriginalUrl { get; set; } = null!;
