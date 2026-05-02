@@ -1,6 +1,8 @@
 using Linksy.Api.Converters;
 using Linksy.Data;
 using Linksy.Data.Models;
+using Linksy.Data.Repositories;
+using Linksy.Data.Repositories.Contracts;
 using Linksy.Services.Core;
 using Linksy.Services.Core.Contracts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-
+// TODO: Add reachability check for passed URLs
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,8 +41,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
   .AddEntityFrameworkStores<ApplicationDbContext>()
   .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<ILinkRepository, LinkRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ILinkService, LinkService>();    
 
 var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] 
     ?? throw new InvalidOperationException("CORS allowed origin is not configured.");
