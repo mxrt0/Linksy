@@ -56,4 +56,15 @@ public class LinksController(ILinkService linkService) : BaseController
         }
         return Ok(result.Data);
     }
+
+    [HttpDelete("{linkId}")]
+    public async Task<ActionResult> DeleteLink(Guid linkId)
+    {
+        var result = await linkService.DeleteLinkAsync(linkId);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+        return NoContent();
+    }
 }

@@ -131,4 +131,16 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
 
         return ServiceResult<LinkDto>.Ok(MapToDto(link));
     }
+
+    public async Task<ServiceResult> DeleteLinkAsync(Guid linkId)
+    {
+        var success = await linkRepository.DeleteAsync(linkId);
+
+        if (!success)
+        {
+            return ServiceResult.Fail("Link not found.");
+        }
+
+        return ServiceResult.Ok();
+    }
 }
