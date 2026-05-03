@@ -41,8 +41,22 @@ async function toggleActive(id: string): Promise<ServiceResult<Link>> {
     return {success: true, data};
 }
 
+async function deleteLink(id: string): Promise<ServiceResult> {
+    const res = await apiFetch(`/api/links/${id}`, {
+        method: 'DELETE'
+    })
+
+    if (!res.ok) {
+        return await res.json();
+    }
+
+    return { success: true };
+}
+
+
 export const linkService = {
     create,
     getLinks,
-    toggleActive
+    toggleActive,
+    deleteLink
 }

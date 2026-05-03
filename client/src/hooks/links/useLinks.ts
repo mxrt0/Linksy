@@ -28,11 +28,16 @@ export function useLinks() {
 
   const toggleActive = async (id: string) => {
     try {
-      await linkService.toggleActive(id);
+      const result = await linkService.toggleActive(id);
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
 
       setLinks((prev) =>
         prev.map((l) =>
-          l.id === id ? { ...l, isActive: !l.isActive } : l
+          l.id === id ? result.data : l
         )
       );
     } catch {
@@ -42,8 +47,13 @@ export function useLinks() {
 
   const remove = async (id: string) => {
     try {
-      // await linkService.deleteLink(id);
+      const result = await linkService.deleteLink(id);
 
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      
       setLinks((prev) => prev.filter((l) => l.id !== id));
     } catch {
       setError("Failed to delete link");
