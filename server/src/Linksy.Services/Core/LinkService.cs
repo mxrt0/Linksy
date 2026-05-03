@@ -119,4 +119,16 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
 
         return ServiceResult<IEnumerable<LinkDto>>.Ok(linkDtos);
     }
+
+    public async Task<ServiceResult<LinkDto>> ToggleLinkActiveAsync(Guid linkId)
+    {
+        var link = await linkRepository.ToggleActiveAsync(linkId);
+
+        if (link is null)
+        {
+            return ServiceResult<LinkDto>.Fail("Link not found.");
+        }
+
+        return ServiceResult<LinkDto>.Ok(MapToDto(link));
+    }
 }

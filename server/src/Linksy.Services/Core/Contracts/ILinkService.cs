@@ -10,4 +10,5 @@ public interface ILinkService
 {
     Task<ServiceResult<LinkDto>> CreateLinkAsync(CreateLinkRequest request, string userId);
     Task<ServiceResult<IEnumerable<LinkDto>>> GetLinksAsync(string userId);
+    Task<ServiceResult<LinkDto>> ToggleLinkActiveAsync(Guid linkId);
 }

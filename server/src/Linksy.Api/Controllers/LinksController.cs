@@ -45,4 +45,15 @@ public class LinksController(ILinkService linkService) : BaseController
 
         return Ok(result.Data);
     }
+
+    [HttpPatch("{linkId}")]
+    public async Task<ActionResult<LinkDto>> ToggleLinkActive(Guid linkId)
+    {
+        var result = await linkService.ToggleLinkActiveAsync(linkId);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result.Data);
+    }
 }
