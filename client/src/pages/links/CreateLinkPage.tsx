@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EXPIRY_OPTIONS, type Expiry } from "../../types/link/Expiry";
+import { linkService } from "../../services/linkService";
 
 export function CreateLinkPage() {
   const navigate = useNavigate();
@@ -21,11 +22,11 @@ export function CreateLinkPage() {
     setIsLoading(true);
 
     try {
-      // await onCreate({
-      //   originalUrl: originalUrl.trim(),
-      //   shortCode: shortCode.trim() || undefined,
-      //   expiry,
-      // });
+      await linkService.create({
+        originalUrl: originalUrl.trim(),
+        shortCode: shortCode.trim() || undefined,
+        expiry,
+      });
 
       navigate("/dashboard", { replace: true });
 
@@ -90,9 +91,7 @@ export function CreateLinkPage() {
             <div className="mb-5">
               <label className="block text-[11px] uppercase tracking-widest text-gray-500 dark:text-white/35 mb-2">
                 Destination URL
-                <span className="normal-case tracking-normal text-gray-400 dark:text-white/20 ml-1.5">
-                  required
-                </span>
+                <span className="text-red-500 ml-1">*</span>
               </label>
 
               <input
@@ -230,7 +229,7 @@ export function CreateLinkPage() {
                   flex-1 py-2.5 rounded-xl
                   bg-white dark:bg-white/5
                   border border-gray-200 dark:border-white/10
-                  text-sm font-medium
+                  text-sm font-medium cursor-pointer
                   text-gray-600 dark:text-white/50
                   hover:bg-gray-50 dark:hover:bg-white/10
                   hover:text-gray-800 dark:hover:text-white/75
@@ -247,7 +246,7 @@ export function CreateLinkPage() {
                   flex-2 py-2.5 rounded-xl
                   bg-indigo-600 hover:bg-indigo-500
                   text-white text-sm font-medium
-                  transition
+                  transition cursor-pointer
                   shadow-lg shadow-indigo-500/20
                   dark:shadow-indigo-500/15
                   disabled:opacity-40

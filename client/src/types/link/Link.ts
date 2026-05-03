@@ -5,4 +5,6 @@ export interface Link {
   clicks: number;
   isActive: boolean;
   createdAt: string;
+  shortUrl: string;
 }
+

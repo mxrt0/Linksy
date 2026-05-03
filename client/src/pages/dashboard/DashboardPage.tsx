@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import type { Link } from "../../types/link/Link";
 import { StatCard } from "../../components/StatCard";
+import { useLinks } from "../../hooks/links/useLinks";
 
 export function DashboardPage() {
-  const [links, setLinks] = useState<Link[]>([]);
+  const {
+    links,
+    loading,
+    error,
+    toggleActive,
+    remove,
+  } = useLinks();
+  
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const menuRef = useRef<Map<string, HTMLDivElement>>(new Map());
-
-  useEffect(() => {
-    setLinks([]);
-
-    // useEffect(() => {
-    //   linkService.getLinks().then(setLinks);
-    // }, []);
-
-  }, []);
 
   const filtered = links.filter(
     (l) =>
@@ -29,86 +27,87 @@ export function DashboardPage() {
   const activeCount = links.filter((l) => l.isActive).length;
 
   const handleToggleActive = async (id: string) => {
-    try {
-      // await linkService.toggleActive(id);
-
-      setLinks((prev) =>
-        prev.map((link) =>
-          link.id === id
-            ? { ...link, isActive: !link.isActive }
-            : link
-        )
-      );
-
       setOpenMenu(null);
+      await toggleActive(id);
 
-    } catch (err) {
-      console.error("Failed to toggle link", err);
     }
-  };
 
   const handleDelete = async (id: string) => {
-    try {
-      //await linkService.deleteLink(id);
-
-      setLinks((prev) =>
-        prev.filter((link) => link.id !== id)
-      );
-
-      setOpenMenu(null);
-
-    } catch (err) {
-      console.error("Failed to delete link", err);
-    }
+    setOpenMenu(null);
+    await remove(id);
   };
 
-  const handleCopy = (shortCode: string) => {
+  const handleCopy = (shortCode: string) => {   
+    navigator.clipboard.writeText(`https://lnky.io/${shortCode}`);
     setCopiedCode(shortCode);
+    
     setOpenMenu(null);
     setTimeout(() => setCopiedCode(null), 2000);
-
-    // navigator.clipboard.writeText(`https://lnky.io/${shortCode}`);
   };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (openMenu) {
-        const el = menuRef.current.get(openMenu);
-        if (el && !el.contains(e.target as Node)) setOpenMenu(null);
-      }
+      if (!openMenu) return;
+
+      const el = menuRef.current.get(openMenu);
+      if (!el) return;
+
+      requestAnimationFrame(() => {
+        if (!el.contains(e.target as Node)) {
+          setOpenMenu(null);
+        }
+      });
     };
 
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenu]);
 
+   if (loading) {
+    return <div className="text-center text-gray-400 py-10">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-400 text-center py-10">{error}</div>;
+  }
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] transition-colors">
 
       {/* Toast */}
       <div className={`
-        fixed bottom-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300
-        ${copiedCode ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
+        fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+        transition-all duration-300
+        ${copiedCode
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-2 pointer-events-none"
+        }
       `}>
         <div className="
-          flex items-center gap-2 px-4 py-2.5 rounded-xl
-          bg-gray-900 dark:bg-white
-          border border-gray-800 dark:border-gray-200
-          shadow-xl
+          flex items-center gap-2.5 px-4 py-2.5 rounded-2xl
+          bg-white/95 dark:bg-[#111118]/95 backdrop-blur
+          border border-gray-200 dark:border-white/10
+          shadow-lg shadow-black/5 dark:shadow-black/40
         ">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+          >
             <path
               d="M2.5 7.5l3 3 6-6"
-              stroke="#4ade80"
-              strokeWidth="1.5"
+              stroke="#22c55e"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
 
-          <span className="text-sm font-medium text-white dark:text-gray-900">
+          <span className="text-sm font-medium text-gray-900 dark:text-white">
             Copied to clipboard
           </span>
+
         </div>
       </div>
 
@@ -170,9 +169,9 @@ export function DashboardPage() {
 
         {/* Table */}
         <div className="
-          bg-white dark:bg-white/5
+          relative bg-white dark:bg-white/5
           border border-gray-200 dark:border-white/10
-          rounded-xl overflow-hidden
+          rounded-xl
         ">
 
           {/* Header */}
@@ -183,16 +182,35 @@ export function DashboardPage() {
             bg-gray-50 dark:bg-white/5
           ">
             {["Original URL", "Short link", "Clicks", "Status", ""].map((col, i) => (
-              <span key={i} className="text-[10px] cursor-default uppercase tracking-widest text-gray-400 dark:text-white/30">
+              <span
+                key={i}
+                className={`text-[10px] uppercase cursor-default tracking-widest text-gray-400 dark:text-white/30`}
+              >
                 {col}
               </span>
             ))}
           </div>
 
           {/* Empty state */}
-          {filtered.length === 0 ? (
+          {loading ? (
             <div className="py-14 text-center">
-              <p className="text-gray-400 cursor-default dark:text-white/25 text-sm">
+              <div className="flex justify-center items-center gap-2 text-gray-400 dark:text-white/30 text-sm">
+                <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="5.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeDasharray="8 8"
+                  />
+                </svg>
+                Loading links...
+              </div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-14 text-center">
+              <p className="text-gray-400 dark:text-white/25 text-sm">
                 {search ? "No links match your search" : "You haven't created any links yet."}
               </p>
             </div>
@@ -210,41 +228,76 @@ export function DashboardPage() {
               >
                 {/* URL */}
                 <div className="min-w-0">
-                  <p className="text-gray-900 dark:text-white text-sm font-medium truncate">
+                  <p 
+                    className="text-gray-900 cursor-default dark:text-white text-sm font-medium truncate"
+                    title={link.originalUrl}
+                  >
                     {link.originalUrl}
                   </p>
 
-                  <p className="text-gray-400 dark:text-white/25 text-[11px] truncate mt-0.5">
+                  <p className="text-gray-400 cursor-default dark:text-white/25 text-[11px] truncate mt-0.5">
                     lnky.io/{link.shortCode}
                   </p>
                 </div>
 
-                {/* Short */}
-                <span className="text-indigo-600 dark:text-indigo-400 text-[12px] font-mono truncate">
-                  lnky.io/{link.shortCode}
-                </span>
+                {/* Short link + copy */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-indigo-600 dark:text-indigo-400 text-[12px] font-mono truncate">
+                    lnky.io/{link.shortCode}
+                  </span>
+                  <button
+                    onClick={() => handleCopy(link.shortCode)}
+                    disabled={copiedCode === link.shortCode}
+                    title="Copy link"
+                    className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all duration-150 border ${
+                      copiedCode === link.shortCode
+                        ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400 cursor-default"
+                        : "bg-black/4 cursor-pointer dark:bg-white/4 border-black/8 dark:border-white/8 text-black/45 dark:text-white/40 hover:bg-black/8 dark:hover:bg-white/8 hover:text-black/70 dark:hover:text-white/65 hover:border-black/12 dark:hover:border-white/12"
+                    }`}
+                  >
+                    {copiedCode === link.shortCode ? (
+                      <>
+                        <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                          <path d="M2.5 7.5l3 3 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                          <path d="M8 8h10v10H8V8Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                          <path d="M6 16H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                        </svg>
+                        
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 {/* Clicks */}
-                <span className="text-gray-900 dark:text-white text-sm font-medium">
+                <span className="text-gray-900 cursor-default text-left dark:text-white text-sm font-medium">
                   {link.clicks.toLocaleString()}
                 </span>
 
                 {/* Status */}
                 <span className={`
-                  text-[10px] px-2 py-1 rounded-full w-fit border inline-flex items-center gap-1.5
+                  text-[10px] cursor-default px-2 py-1.25 rounded-full w-fit border inline-flex items-center gap-1.5
                   ${link.isActive
                     ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
-                    : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-400 dark:text-white/30"
+                    : "bg-red-500/5 dark:bg-red-500/5border-red-500/10 text-red-500/60 dark:text-red-400/60"
                   }
                 `}>
-                  <span className={`w-1 h-1 rounded-full ${link.isActive ? "bg-green-500" : "bg-gray-400"}`} />
+                  <span className={`w-1 h-1 cursor-default rounded-full relative top-[0.5px] ${link.isActive ? "bg-green-500" : "bg-red-400/70"}`} />
                   {link.isActive ? "Active" : "Inactive"}
                 </span>
 
                 {/* Menu */}
                 <div className="relative">
                   <button
-                    onClick={() => setOpenMenu(openMenu === link.id ? null : link.id)}
+                    onClick={() => {
+                      if (openMenu === link.id) return;
+                      setOpenMenu(link.id);
+                    }}
                     className="
                       w-6 h-6 flex items-center justify-center rounded-md
                       text-gray-400 dark:text-white/30
@@ -267,20 +320,25 @@ export function DashboardPage() {
                         else menuRef.current.delete(link.id);
                       }}
                       className="
-                        absolute right-0 mt-1 w-40 rounded-xl shadow-xl overflow-hidden z-50
+                        absolute right-0 sm:right-auto sm:left-0
+                         mt-1 w-40 rounded-xl shadow-xl overflow-hidden z-999
                         bg-white dark:bg-[#111118]
                         border border-gray-200 dark:border-white/10
                       "
                     >
-                      <button 
-                      onClick={() => handleCopy(link.shortCode)}
-                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70">
-                        Copy link
+                      <button
+                        onClick={() => { 
+                          setOpenMenu(null);
+                          window.open(link.originalUrl, "_blank");
+                        }}
+                        className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                      >
+                        Open link
                       </button>
 
                       <button 
                       onClick={() => handleToggleActive(link.id)}
-                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 
+                      className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 
                       dark:hover:bg-white/5 text-gray-700 dark:text-white/70">
                         {link.isActive ? "Deactivate" : "Activate"}
                       </button>
@@ -289,7 +347,7 @@ export function DashboardPage() {
 
                       <button 
                       onClick={() => handleDelete(link.id)}
-                      className="w-full text-left px-3 py-2.5 text-sm text-red-500
+                      className="w-full cursor-pointer text-left px-3 py-2.5 text-sm text-red-500
                        dark:text-red-400 hover:bg-gray-50 dark:hover:bg-white/5">
                         Delete
                       </button>
