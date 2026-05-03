@@ -28,7 +28,21 @@ async function create(request: CreateLinkRequest): Promise<ServiceResult<Link>> 
     return {success: true, data};
 }
 
+async function toggleActive(id: string): Promise<ServiceResult<Link>> {
+    const res = await apiFetch(`/api/links/${id}`, {
+        method: 'PATCH'
+    })
+
+    if (!res.ok) {
+        return await res.json();
+    }
+
+    const data = await res.json() as Link;
+    return {success: true, data};
+}
+
 export const linkService = {
     create,
-    getLinks
+    getLinks,
+    toggleActive
 }

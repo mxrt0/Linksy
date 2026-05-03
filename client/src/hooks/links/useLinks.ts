@@ -28,7 +28,7 @@ export function useLinks() {
 
   const toggleActive = async (id: string) => {
     try {
-      // await linkService.toggleActive(id);
+      await linkService.toggleActive(id);
 
       setLinks((prev) =>
         prev.map((l) =>

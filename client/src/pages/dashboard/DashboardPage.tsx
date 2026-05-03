@@ -29,8 +29,7 @@ export function DashboardPage() {
   const handleToggleActive = async (id: string) => {
       setOpenMenu(null);
       await toggleActive(id);
-
-    }
+  }
 
   const handleDelete = async (id: string) => {
     setOpenMenu(null);
@@ -62,10 +61,6 @@ export function DashboardPage() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenu]);
-
-   if (loading) {
-    return <div className="text-center text-gray-400 py-10">Loading...</div>;
-  }
 
   if (error) {
     return <div className="text-red-400 text-center py-10">{error}</div>;
