@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StatCard } from "../../components/StatCard";
 import { useLinks } from "../../hooks/links/useLinks";
+import { useDebounce } from "../../hooks/dashboard/useDebounce";
 
 export function DashboardPage() {
   const {
@@ -12,16 +13,22 @@ export function DashboardPage() {
   } = useLinks();
   
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 250);
+  const isSearching = search !== debouncedSearch;
+
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const menuRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  const filtered = links.filter(
-    (l) =>
-      l.originalUrl.toLowerCase().includes(search.toLowerCase()) ||
-      l.shortCode.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+
+    return links.filter((l) =>
+      l.originalUrl.toLowerCase().includes(q) ||
+      l.shortCode.toLowerCase().includes(q)
+    );
+  }, [links, debouncedSearch]);
 
   const totalClicks = links.reduce((sum, l) => sum + l.clicks, 0);
   const activeCount = links.filter((l) => l.isActive).length;
@@ -163,11 +170,13 @@ export function DashboardPage() {
         </div>
 
         {/* Table */}
-        <div className="
-          relative bg-white dark:bg-white/5
-          border border-gray-200 dark:border-white/10
-          rounded-xl
-        ">
+        <div
+            className={`
+              relative bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10
+              transition-opacity duration-200
+              ${isSearching ? "opacity-60 blur-[0.3px]" : "opacity-100 blur-0"}
+            `}
+          >
 
           {/* Header */}
           <div className="
@@ -218,7 +227,7 @@ export function DashboardPage() {
                   gap-3 px-4 py-3 items-center
                   border-b border-gray-100 dark:border-white/10
                   hover:bg-gray-50 dark:hover:bg-white/5 
-                  hover:border-gray-300 dark:hover:border-white/15 transition
+                  hover:border-gray-300 dark:hover:border-white/15 transition-all duration-200
                 "
               >
                 {/* URL */}
