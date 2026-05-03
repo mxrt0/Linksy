@@ -4,14 +4,25 @@ using System.Text;
 
 namespace Linksy.Services.Results;
 
-public class ServiceResult<T>
+public class ServiceResult<T> : ServiceResult
 {
-    public bool Success { get; private set; }
-    public string? ErrorMessage { get; private set; }
-    public T? Data { get; private set; }
+    private ServiceResult(): base() { } 
+    public T? Data { get; private init; }
 
     public static ServiceResult<T> Ok(T data)
         => new ServiceResult<T> { Success = true, Data = data };
-    public static ServiceResult<T> Fail(string message)
-        => new ServiceResult<T> { Success = false, ErrorMessage = message };
+    public static new ServiceResult<T> Fail(string message)
+        => new ServiceResult<T> { Success = false, Error = message };
+}
+
+public class ServiceResult
+{
+    protected ServiceResult() { }
+
+    public bool Success { get; protected init; }
+    public string? Error { get; protected init; }
+    public static ServiceResult Ok()
+        => new ServiceResult { Success = true };
+    public static ServiceResult Fail(string message)
+        => new ServiceResult { Success = false, Error = message };
 }

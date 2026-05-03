@@ -10,7 +10,8 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Linksy.Services.Core;
-
+// TODO: Actual count of clicks, not 1
+// TODO: GetLinksAsync implementation
 public class LinkService(ILinkRepository linkRepository) : ILinkService
 {
     private const int ShortCodeLength = 7;
@@ -73,7 +74,9 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
             OriginalUrl = request.OriginalUrl,
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
-            ExpiresAt = expiresAt
+            UpdatedAt = DateTime.UtcNow,
+            ExpiresAt = expiresAt,
+            IsActive = true
         };
     }
 
@@ -81,9 +84,13 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
     {
         return new LinkDto
         {
+            Id = link.Id,
             ShortCode = link.ShortCode,
             OriginalUrl = link.OriginalUrl,
-            ShortUrl = $"{AppConstants.ShortUrlBase}{link.ShortCode}"
+            ShortUrl = $"{AppConstants.ShortUrlBase}{link.ShortCode}",
+            CreatedAt = link.CreatedAt,
+            IsActive = link.IsActive,
+            Clicks = 1//link.Clicks.Count
         };
     }
 
@@ -100,5 +107,40 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
         }
 
         return sb.ToString();
+    }
+
+    public async Task<ServiceResult<IEnumerable<LinkDto>>> GetLinksAsync(string userId)
+    {
+        var links = await linkRepository.GetAll()
+            .Where(link => link.UserId == userId)
+            .ToListAsync();
+
+        var linkDtos = links.Select(MapToDto);
+
+        return ServiceResult<IEnumerable<LinkDto>>.Ok(linkDtos);
+    }
+
+    public async Task<ServiceResult<LinkDto>> ToggleLinkActiveAsync(Guid linkId)
+    {
+        var link = await linkRepository.ToggleActiveAsync(linkId);
+
+        if (link is null)
+        {
+            return ServiceResult<LinkDto>.Fail("Link not found.");
+        }
+
+        return ServiceResult<LinkDto>.Ok(MapToDto(link));
+    }
+
+    public async Task<ServiceResult> DeleteLinkAsync(Guid linkId)
+    {
+        var success = await linkRepository.DeleteAsync(linkId);
+
+        if (!success)
+        {
+            return ServiceResult.Fail("Link not found.");
+        }
+
+        return ServiceResult.Ok();
     }
 }
