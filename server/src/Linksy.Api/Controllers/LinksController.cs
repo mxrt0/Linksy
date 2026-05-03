@@ -1,5 +1,7 @@
 ﻿using Linksy.Services.Core.Contracts;
+using Linksy.Services.DTOs.Click;
 using Linksy.Services.DTOs.Link;
+using Linksy.Services.Results.Link;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

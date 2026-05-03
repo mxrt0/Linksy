@@ -14,4 +14,5 @@ public interface ILinkRepository
     Task<bool> DeleteAsync(Guid linkId);
     Task<bool> AnyAsync(Expression<Func<Link, bool>> predicate);
     Task<Link?> FirstOrDefaultAsync(Expression<Func<Link, bool>> predicate);
+    Task<Link?> GetByShortCodeAsync(string shortCode);
 }
