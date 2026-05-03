@@ -8,6 +8,7 @@ namespace Linksy.Data.Repositories.Contracts;
 
 public interface ILinkRepository
 {
+    IQueryable<Link> GetAll();
     Task AddAsync(Link link);
     Task<bool> AnyAsync(Expression<Func<Link, bool>> predicate);
 }

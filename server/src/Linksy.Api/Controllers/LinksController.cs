@@ -9,6 +9,24 @@ namespace Linksy.Api.Controllers;
 [Authorize]
 public class LinksController(ILinkService linkService) : BaseController
 {
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<LinkDto>>> GetLinks()
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await linkService.GetLinksAsync(userId);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result.Data);
+    }
+
     [HttpPost]
     public async Task<ActionResult<LinkDto>> CreateLink(CreateLinkRequest request)
     {

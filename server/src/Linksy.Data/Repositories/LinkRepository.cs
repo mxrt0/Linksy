@@ -20,4 +20,7 @@ public class LinkRepository(ApplicationDbContext context) : ILinkRepository
     {
         return await context.Links.AnyAsync(predicate);
     }
+
+    public IQueryable<Link> GetAll() => context.Links.AsNoTracking();   
+
 }
