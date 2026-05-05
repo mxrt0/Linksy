@@ -43,6 +43,11 @@ public class LinkRepository(ApplicationDbContext context) : ILinkRepository
 
     public IQueryable<Link> GetAll() => context.Links.AsNoTracking();
 
+    public async Task<Link?> GetByShortCodeAsync(string shortCode)
+    {
+        return await FirstOrDefaultAsync(l => l.ShortCode == shortCode);
+    }
+
     public async Task<Link?> ToggleActiveAsync(Guid linkId)
     {
         var link = await FirstOrDefaultAsync(x => x.Id == linkId);

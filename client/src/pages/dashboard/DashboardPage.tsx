@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { StatCard } from "../../components/StatCard";
 import { useLinks } from "../../hooks/links/useLinks";
 import { useDebounce } from "../../hooks/dashboard/useDebounce";
+import { API_URL } from "../../config/api";
 
 export function DashboardPage() {
   const {
@@ -333,7 +334,7 @@ export function DashboardPage() {
                       <button
                         onClick={() => { 
                           setOpenMenu(null);
-                          window.open(link.originalUrl, "_blank");
+                          window.open(`${API_URL}/r/${link.shortCode}`, "_blank");
                         }}
                         className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
                       >

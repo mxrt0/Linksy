@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-// TODO: Add reachability check for passed URLs
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -42,6 +42,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
   .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<ILinkRepository, LinkRepository>();
+builder.Services.AddScoped<IClickRepository, ClickRepository>();    
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();

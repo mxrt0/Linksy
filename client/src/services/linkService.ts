@@ -41,7 +41,7 @@ async function toggleActive(id: string): Promise<ServiceResult<Link>> {
     return {success: true, data};
 }
 
-async function deleteLink(id: string): Promise<ServiceResult> {
+async function deleteLink(id: string): Promise<ServiceResult<null>> {
     const res = await apiFetch(`/api/links/${id}`, {
         method: 'DELETE'
     })
@@ -50,7 +50,7 @@ async function deleteLink(id: string): Promise<ServiceResult> {
         return await res.json();
     }
 
-    return { success: true };
+    return { success: true, data: null };
 }
 
 

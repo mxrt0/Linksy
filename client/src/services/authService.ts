@@ -36,8 +36,21 @@ async function logout(): Promise<void> {
     await apiFetch('/api/auth/logout')
 }
 
+async function me(): Promise<User> {
+    const res = await apiFetch('/api/auth/me');
+    
+    if (res.ok) {
+        return await res.json();
+    }
+    else {
+        const content = await res.json() as { errors: string[] }; 
+        throw new ApiError("User unauthenticated", content.errors);
+    }
+}
+
 export const authService = {
     register,
     login,
-    logout
+    logout,
+    me
 }

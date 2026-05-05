@@ -3,18 +3,21 @@ using Linksy.Common.Enums;
 using Linksy.Data.Models;
 using Linksy.Data.Repositories.Contracts;
 using Linksy.Services.Core.Contracts;
+using Linksy.Services.DTOs.Click;
 using Linksy.Services.DTOs.Link;
 using Linksy.Services.Results;
+using Linksy.Services.Results.Link;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-
+using System.Text.RegularExpressions;
+using static Linksy.Data.Common.EntityValidation.Link;
 namespace Linksy.Services.Core;
 // TODO: Actual count of clicks, not 1
-// TODO: GetLinksAsync implementation
-public class LinkService(ILinkRepository linkRepository) : ILinkService
+
+public class LinkService(ILinkRepository linkRepository, IClickRepository clickRepository) : ILinkService
 {
-    private const int ShortCodeLength = 7;
+    private const int GeneratedShortCodeLength = 7;
     private const int MaxRetryAttempts = 3;
 
     public async Task<ServiceResult<LinkDto>> CreateLinkAsync(CreateLinkRequest request, string userId)
@@ -30,6 +33,11 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
 
         if (!string.IsNullOrWhiteSpace(request.ShortCode))
         {
+            if (!Regex.IsMatch(request.ShortCode, ShortCodePattern))
+            {
+                return ServiceResult<LinkDto>.Fail("Short code must contain 3-20 alphanumeric (or '-') characters.");
+            }
+
             var customLink = CreateLinkEntity(request.ShortCode, request, userId, expiresAt);
 
             try
@@ -80,35 +88,6 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
         };
     }
 
-    private LinkDto MapToDto(Link link)
-    {
-        return new LinkDto
-        {
-            Id = link.Id,
-            ShortCode = link.ShortCode,
-            OriginalUrl = link.OriginalUrl,
-            ShortUrl = $"{AppConstants.ShortUrlBase}{link.ShortCode}",
-            CreatedAt = link.CreatedAt,
-            IsActive = link.IsActive,
-            Clicks = 1//link.Clicks.Count
-        };
-    }
-
-    private string GenerateShortCode()
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        var sb = new StringBuilder(ShortCodeLength);
-
-        for (int i = 0; i < ShortCodeLength; i++)
-        {
-            var index = RandomNumberGenerator.GetInt32(chars.Length);
-            sb.Append(chars[index]);
-        }
-
-        return sb.ToString();
-    }
-
     public async Task<ServiceResult<IEnumerable<LinkDto>>> GetLinksAsync(string userId)
     {
         var links = await linkRepository.GetAll()
@@ -143,4 +122,66 @@ public class LinkService(ILinkRepository linkRepository) : ILinkService
 
         return ServiceResult.Ok();
     }
+
+    public async Task<RedirectLinkResult> GetActiveLinkAsync(string shortCode)
+    {
+        var link = await linkRepository.GetByShortCodeAsync(shortCode);
+
+        if (link is null)
+            return new RedirectLinkResult(RedirectLinkFailureReason.NotFound);
+
+        if (!link.IsActive)
+            return new RedirectLinkResult(RedirectLinkFailureReason.Inactive);
+
+        if (link.ExpiresAt.HasValue && link.ExpiresAt < DateTime.UtcNow)
+            return new RedirectLinkResult(RedirectLinkFailureReason.Expired);
+
+        return new RedirectLinkResult(link.Id, link.OriginalUrl);
+    }
+
+    public async Task<ServiceResult> TrackClickAsync(Guid linkId, ClickData data)
+    {
+        var click = new Click
+        {
+            Id = Guid.NewGuid(),
+            LinkId = linkId,
+            ClickedAt = DateTime.UtcNow,
+            IpAddress = data.IpAddress,
+            Referer = data.Referer,
+            UserAgent = data.UserAgent,
+        };
+
+        await clickRepository.AddAsync(click);
+        return ServiceResult.Ok();
+    }
+
+    private LinkDto MapToDto(Link link)
+    {
+        return new LinkDto
+        {
+            Id = link.Id,
+            ShortCode = link.ShortCode,
+            OriginalUrl = link.OriginalUrl,
+            ShortUrl = $"{AppConstants.ShortUrlBase}{link.ShortCode}",
+            CreatedAt = link.CreatedAt,
+            IsActive = link.IsActive,
+            Clicks = clickRepository.GetLinkClickCount(link.Id)
+        };
+    }
+
+    private string GenerateShortCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        var sb = new StringBuilder(GeneratedShortCodeLength);
+
+        for (int i = 0; i < GeneratedShortCodeLength; i++)
+        {
+            var index = RandomNumberGenerator.GetInt32(chars.Length);
+            sb.Append(chars[index]);
+        }
+
+        return sb.ToString();
+    }
+
 }

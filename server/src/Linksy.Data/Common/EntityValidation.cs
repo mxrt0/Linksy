@@ -20,7 +20,7 @@ public static class EntityValidation
         public const int OriginalUrlMaxLength = 2048;
         public const int ShortCodeMinLength = 3;
         public const int ShortCodeMaxLength = 20;
-        public const string ShortCodePattern = "^[a-zA-Z0-9-]+$";
+        public const string ShortCodePattern = "^[a-zA-Z0-9-]{3,20}$";
     }
 
     public static class Click
