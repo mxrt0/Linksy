@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { AppLayout } from './layout/AppLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { CreateLinkPage } from './pages/links/CreateLinkPage'
+import { AnalyticsPage } from './pages/links/AnalyticsPage'
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/links/new" element={<CreateLinkPage />} />
       </Route>
       

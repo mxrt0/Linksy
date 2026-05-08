@@ -1,10 +1,14 @@
 import { useRef, useState } from "react";
 import { useAuth } from "../hooks/auth/useAuth";
 import { useTheme } from "../hooks/theme/useTheme";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useClickOutside } from "../hooks/topbar/useClickOutside";
 
 export function Topbar() {
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+
   const { user, logout } = useAuth();
   if (!user) return null;
 
@@ -46,6 +50,34 @@ export function Topbar() {
           </span>
         </div>
       </div>
+
+      <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+  
+      <button
+        onClick={() => navigate("/dashboard")}
+        className={`cursor-pointer
+          px-3 py-1.5 text-sm rounded-lg transition
+          ${isActive("/dashboard")
+            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+            : "text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white"}
+        `}
+      >
+        Dashboard
+      </button>
+
+      <button
+        onClick={() => navigate("/analytics")}
+        className={`cursor-pointer
+          px-3 py-1.5 text-sm rounded-lg transition
+          ${isActive("/analytics")
+            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+            : "text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white"}
+        `}
+      >
+        Analytics
+      </button>
+
+    </div>
 
       {/* Right side */}
       <div className="flex items-center gap-2">
