@@ -3,6 +3,9 @@ import { StatCard } from "../../components/StatCard";
 import { useLinks } from "../../hooks/links/useLinks";
 import { useDebounce } from "../../hooks/dashboard/useDebounce";
 import { API_URL } from "../../config/api";
+import { ConfirmModal } from "../../components/ConfirmModal";
+import { useToast } from "../../hooks/toast/useToast";
+import type { Link } from "../../types/link/Link";
 
 export function DashboardPage() {
   const {
@@ -11,14 +14,20 @@ export function DashboardPage() {
     error,
     toggleActive,
     remove,
+    restore,
   } = useLinks();
   
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 250);
   const isSearching = search !== debouncedSearch;
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const [deleteTarget, setDeleteTarget] = useState<Link | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const menuRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -39,14 +48,35 @@ export function DashboardPage() {
       await toggleActive(id);
   }
 
-  const handleDelete = async (id: string) => {
-    setOpenMenu(null);
-    await remove(id);
+  const confirmDelete = async () => {
+  if (!deleteTarget) return;
+
+  setDeleting(true);
+
+  await handleDelete(deleteTarget.id);
+
+  setDeleting(false);
+  setDeleteTarget(null);
   };
 
-  const handleCopy = (shortCode: string) => {   
-    navigator.clipboard.writeText(`https://lnky.io/${shortCode}`);
+  const handleDelete = async (id: string) => {
+  setOpenMenu(null);
+
+  const deleted = await remove(id);
+
+  if (!deleted) return;
+
+  showToast("Link deleted", "error", {
+    label: "Undo",
+    onClick: () => restore(deleted)
+  });
+};
+
+  const handleCopy = (shortCode: string) => {
     setCopiedCode(shortCode);
+       
+    navigator.clipboard.writeText(`${API_URL}/r/${shortCode}`);
+    showToast("Copied to clipboard", "success");
     
     setOpenMenu(null);
     setTimeout(() => setCopiedCode(null), 2000);
@@ -75,44 +105,6 @@ export function DashboardPage() {
   }
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] transition-colors">
-
-      {/* Toast */}
-      <div className={`
-        fixed bottom-6 left-1/2 -translate-x-1/2 z-50
-        transition-all duration-300
-        ${copiedCode
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-2 pointer-events-none"
-        }
-      `}>
-        <div className="
-          flex items-center gap-2.5 px-4 py-2.5 rounded-2xl
-          bg-white/95 dark:bg-[#111118]/95 backdrop-blur
-          border border-gray-200 dark:border-white/10
-          shadow-lg shadow-black/5 dark:shadow-black/40
-        ">
-
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-          >
-            <path
-              d="M2.5 7.5l3 3 6-6"
-              stroke="#22c55e"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
-            Copied to clipboard
-          </span>
-
-        </div>
-      </div>
 
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-8">
 
@@ -351,7 +343,10 @@ export function DashboardPage() {
                       <div className="border-t border-gray-100 dark:border-white/10" />
 
                       <button 
-                      onClick={() => handleDelete(link.id)}
+                      onClick={() => {
+                        setOpenMenu(null);
+                        setDeleteTarget(link);
+                      }}
                       className="w-full cursor-pointer text-left px-3 py-2.5 text-sm text-red-500
                        dark:text-red-400 hover:bg-gray-50 dark:hover:bg-white/5">
                         Delete
@@ -366,6 +361,17 @@ export function DashboardPage() {
         </div>
 
       </main>
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete this link?"
+        description={`lnky.io/${deleteTarget?.shortCode} -> ${deleteTarget?.originalUrl}`}
+        confirmText="Delete"
+        danger
+        loading={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
