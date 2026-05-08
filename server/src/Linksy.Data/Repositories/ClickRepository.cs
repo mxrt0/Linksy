@@ -26,6 +26,11 @@ public class ClickRepository(ApplicationDbContext context) : IClickRepository
         return await context.Clicks.FirstOrDefaultAsync(predicate); 
     }
 
+    public IQueryable<Click> GetByLinkId(Guid linkId)
+    {
+        return context.Clicks.Where(c => c.LinkId == linkId);
+    }
+
     public int GetLinkClickCount(Guid linkId)
     {
         return context.Clicks.Count(c => c.LinkId == linkId);

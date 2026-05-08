@@ -10,6 +10,7 @@ public interface IClickRepository
 {
     Task AddAsync(Click click);
     int GetLinkClickCount(Guid linkId);
+    IQueryable<Click> GetByLinkId(Guid linkId);
     Task<bool> AnyAsync(Expression<Func<Click, bool>> predicate);
     Task<Click?> FirstOrDefaultAsync(Expression<Func<Click, bool>> predicate);
 }
