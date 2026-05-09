@@ -1,4 +1,6 @@
+import type { TrafficSource } from "./TrafficSource";
+
 export type ReferrerStat = {
-  source: string;
+  source: TrafficSource;
   count: number;
 };

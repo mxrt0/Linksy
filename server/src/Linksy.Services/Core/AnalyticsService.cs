@@ -40,6 +40,7 @@ public class AnalyticsService(
                 c.Referer.Contains("google") ? "Google" :
                 c.Referer.Contains("twitter") ? "Twitter/X" :
                 c.Referer.Contains("discord") ? "Discord" :
+                c.Referer.Trim() == "qr" ? "QR" :
                 string.IsNullOrWhiteSpace(c.Referer) ? "Direct" :
                 "Other")
             .Select(g => new ReferrerStatDto

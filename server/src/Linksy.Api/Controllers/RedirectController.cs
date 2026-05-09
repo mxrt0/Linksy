@@ -20,11 +20,17 @@ public class RedirectController(ILinkService linkService) : ControllerBase
             return NotFound(new { error = result.ErrorMessage });
         }
 
+        var referrer = Request.Headers["Referer"].ToString();
+        
+        if (string.IsNullOrWhiteSpace(referrer))
+        {
+            referrer = Request.Query["source"] == "qr" ? "qr" : string.Empty;
+        }
         var clickData = new ClickData
         {
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
             UserAgent = Request.Headers["User-Agent"].ToString(),
-            Referer = Request.Headers["Referer"].ToString()
+            Referer = referrer
         };
 
         await linkService.TrackClickAsync(result.Id!.Value, clickData);

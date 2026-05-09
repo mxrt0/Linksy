@@ -7,6 +7,7 @@ import { ConfirmModal } from "../../components/ConfirmModal";
 import { useToast } from "../../hooks/toast/useToast";
 import type { Link } from "../../types/link/Link";
 import { useNavigate } from "react-router-dom";
+import { QrModal } from "../../components/QrModal";
 
 export function DashboardPage() {
   const {
@@ -30,6 +31,11 @@ export function DashboardPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Link | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+    const [qrLink, setQrLink] = useState<{
+    shortCode: string;
+    url: string;
+  } | null>(null);
 
   const menuRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -345,6 +351,24 @@ export function DashboardPage() {
                         View analytics
                       </button>
 
+                      <button
+                        onClick={() => {
+                          setOpenMenu(null);
+
+                          setQrLink({
+                            shortCode: link.shortCode,
+                            url: `http://192.168.1.4:5086/r/${link.shortCode}?source=qr`
+                          });
+                        }}
+                        className="
+                          w-full cursor-pointer text-left px-3 py-2.5 text-sm
+                          hover:bg-gray-50 dark:hover:bg-white/5
+                          text-gray-700 dark:text-white/70
+                        "
+                    >
+                        View QR code
+                    </button>
+
                       <button 
                       onClick={() => handleToggleActive(link.id)}
                       className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 
@@ -383,6 +407,12 @@ export function DashboardPage() {
         loading={deleting}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
+      />
+      <QrModal
+        open={!!qrLink}
+        shortCode={qrLink?.shortCode ?? null}
+        url={qrLink?.url ?? null}
+        onClose={() => setQrLink(null)}
       />
     </div>
   );

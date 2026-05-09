@@ -7,7 +7,7 @@ async function getAnalytics(
     linkId: string,
     range?: AnalyticsRange)
 : Promise<ServiceResult<AnalyticsSummary>> {
-    
+
     const daysQuery = range ? `?days=${range}` : '';
     const res = await apiFetch(`/api/analytics/${linkId}${daysQuery}`);
 
@@ -17,6 +17,7 @@ async function getAnalytics(
 
 
     const data = await res.json() as AnalyticsSummary;
+    console.log(data.referrers);
     return {
         success: true,
         data

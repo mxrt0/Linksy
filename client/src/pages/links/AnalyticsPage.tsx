@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import type { AnalyticsRange } from "../../types/link/Range";
 import { useParams } from "react-router-dom";
+import { TrafficSource } from "../../types/link/TrafficSource";
 
 export function AnalyticsPage() {
   const { links } = useLinks();
@@ -102,7 +103,7 @@ export function AnalyticsPage() {
           <StatCard
             label="Average daily clicks"
             value={avgDailyClicks}
-            subValue={`${data?.clicksByDay.length ?? 0}-day period`}
+            subValue={`${range}-day window`}
           />
 
         </div>
@@ -267,7 +268,7 @@ export function AnalyticsPage() {
             (r.count / (data.totalClicks || 1)) * 100
           );
 
-          const source = r.source.toLowerCase();
+          const source = r.source;
 
           return (
             <div
@@ -294,31 +295,37 @@ export function AnalyticsPage() {
                   ">
 
                     {/* GOOGLE */}
-                    {source.includes("google") && <img
+                    {source === TrafficSource.Google && <img
                       src="/google-icon.png"
                       alt="Google"
                       className="w-3.5 h-3.5 opacity-80"
                     />}
 
                     {/* TWITTER/X */}
-                    {source.includes("twitter") && <img
+                    {source === TrafficSource.TwitterX && <img
                       src="/twitter-icon.png"
-                      alt="Google"
+                      alt="Twitter/X"
                       className="w-3.5 h-3.5 opacity-80"
                     />}
 
                     {/* DISCORD */}
-                    {source.includes("discord") && <img
+                    {source === TrafficSource.Discord && <img
                       src="/discord-icon.png"
-                      alt="Google"
+                      alt="Discord"
+                      className="w-3.5 h-3.5 opacity-80"
+                    />}
+
+                    {source === TrafficSource.QR && <img
+                      src="/qr-code.png"
+                      alt="QR"
                       className="w-3.5 h-3.5 opacity-80"
                     />}
 
                     {/* DIRECT */}
-                    {source.includes("direct") && (
+                    {source === TrafficSource.Direct && (
                       <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                         <path
-                          d="M6 4h6v6M10 4 4 10"
+                          d="M4 12L12 4M7 4h5v5"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
@@ -327,13 +334,8 @@ export function AnalyticsPage() {
                       </svg>
                     )}
 
-                    {/* FALLBACK */}
-                    {!(
-                      source.includes("google") ||
-                      source.includes("twitter") ||
-                      source.includes("discord") ||
-                      source.includes("direct")
-                    ) && (
+                    {source === TrafficSource.Other 
+                     && (
                       <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                         <circle
                           cx="8"
