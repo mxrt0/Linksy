@@ -1,19 +1,67 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLinks } from "../../hooks/links/useLinks";
 import { useAnalytics } from "../../hooks/links/useAnalytics";
+import { StatCard } from "../../components/StatCard";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from "recharts";
+import type { AnalyticsRange } from "../../types/link/Range";
+import { useParams } from "react-router-dom";
 
 export function AnalyticsPage() {
   const { links } = useLinks();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { data, loading } = useAnalytics(selectedId);
+
+  const { code } = useParams();
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+
+  const [range, setRange] = useState<AnalyticsRange>(30);
+  const { data, loading } = useAnalytics(selectedId, range);
 
   const selectedLink = useMemo(() => {
     return links.find((l) => l.id === selectedId) ?? null;
   }, [links, selectedId]);
 
-  const totalClicks = useMemo(() => {
-    return links.reduce((sum, l) => sum + l.clicks, 0);
-  }, [links]);
+  const topLink = useMemo(() => {
+  if (!links.length) return null;
+
+  return [...links].sort((a, b) => b.clicks - a.clicks)[0];
+}, [links]);
+
+  const avgDailyClicks = useMemo(() => {
+    if (!data?.clicksByDay.length) return 0;
+
+    const total = data.clicksByDay.reduce((sum, d) => sum + d.count, 0);
+
+    return Math.round(total / data.clicksByDay.length);
+  }, [data]);
+
+  const peakDay = useMemo(() => {
+    if (!data?.clicksByDay.length) return null;
+
+    return [...data.clicksByDay].sort((a, b) => b.count - a.count)[0];
+  }, [data]);
+
+  useEffect(() => {
+    if (!code || !links.length) return;
+
+    const match = links.find((l) => l.shortCode === code);
+
+    if (match) {
+      setSelectedId(match.id);
+    }
+  }, [code, links]);
+
+  useEffect(() => {
+    if (!selectedId && links.length > 0) {
+      setSelectedId(links[0].id);
+    }
+  }, [links, selectedId]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f]">
@@ -21,45 +69,50 @@ export function AnalyticsPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-[11px] uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-2">
+          <p className="text-[11px] uppercase cursor-default tracking-widest text-indigo-500 dark:text-indigo-400 mb-2">
             Analytics
           </p>
 
-          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-semibold cursor-default text-gray-900 dark:text-white">
             Insights into your links
           </h1>
         </div>
 
-        {/* Summary cards */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
-            <p className="text-lg text-gray-400 dark:text-white/40">Total links</p>
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">
-              {links.length}
-            </p>
-          </div>
 
-          <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
-            <p className="text-lg text-gray-400 dark:text-white/40">Total clicks</p>
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">
-              {totalClicks.toLocaleString()}
-            </p>
-          </div>
+          <StatCard
+            label="Top performing link"
+            value={topLink ? topLink.shortCode : "—"}
+            subValue={topLink ? `${topLink.clicks} clicks` : "—"}
+          />
 
-          <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
-            <p className="text-lg text-gray-400 dark:text-white/40">Average per link</p>
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">
-              {links.length ? Math.round(totalClicks / links.length) : 0}
-            </p>
-          </div>
+          <StatCard
+            label="Peak traffic day"
+            value={
+              peakDay
+                ? new Date(peakDay.date).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric"
+                  })
+                : "—"
+            }
+            subValue={peakDay ? peakDay.count + " clicks" : undefined}
+          />
+
+          <StatCard
+            label="Average daily clicks"
+            value={avgDailyClicks}
+            subValue={`${data?.clicksByDay.length ?? 0}-day period`}
+          />
+
         </div>
-
+        
         {/* Main layout */}
         <div className="grid grid-cols-3 gap-4">
 
           {/* Left: list of links */}
           <div className="col-span-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
-            <div className="p-3 border-b border-gray-100 dark:border-white/10 text-xs text-gray-400 dark:text-white/40 uppercase tracking-widest">
+            <div className="p-3 border-b cursor-default border-gray-100 dark:border-white/10 text-xs text-gray-400 dark:text-white/40 uppercase tracking-widest">
               Links
             </div>
 
@@ -68,7 +121,7 @@ export function AnalyticsPage() {
                 <button
                   key={link.id}
                   onClick={() => setSelectedId(link.id)}
-                  className={`
+                  className={`cursor-pointer
                     w-full text-left px-3 py-2 text-sm transition
                     hover:bg-gray-50 dark:hover:bg-white/5
                     ${selectedId === link.id ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "text-gray-700 dark:text-white/70"}
@@ -89,21 +142,118 @@ export function AnalyticsPage() {
           <div className="col-span-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-5">
 
             {!selectedLink ? (
-              <div className="text-sm text-gray-400 dark:text-white/30">
+              <div className="text-sm text-gray-400 text-center dark:text-white/30">
                 Select a link to view analytics
               </div>
             ) : loading ? (
                 <div>Loading analytics...</div>
             ) : (
               <>
-                <div className="mb-4">
-                <p className="text-sm text-gray-400">Total clicks</p>
-                <p className="text-2xl font-semibold">{data?.totalClicks}</p>
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-gray-400 dark:text-white/30">
+                      Click activity
+                    </p>
+
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {data?.totalClicks ?? 0}
+                    </p>
+                  </div>
+
+                  <div className="
+                    flex items-center gap-1 p-1 rounded-xl
+                    bg-gray-100 dark:bg-white/5
+                    border border-gray-200 dark:border-white/10
+                  ">
+                    {[7, 30, 90, 365].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setRange(d as AnalyticsRange)}
+                        className={`
+                          px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer
+                          ${
+                            range === d
+                              ? "bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm"
+                              : "text-gray-500 dark:text-white/40 hover:text-gray-900 dark:hover:text-white"
+                          }
+                        `}
+                      >
+                        {d === 365 ? "All" : `${d}D`}
+                      </button>
+                    ))}
                 </div>
 
-                <div className="h-62.5 border border-dashed border-gray-300 dark:border-white/10 rounded-lg flex items-center justify-center text-sm text-gray-400">
-                Chart placeholder ({data?.clicksByDay.length} points)
+              </div>             
+
+                {!data?.clicksByDay.length 
+                  ? "No analytics data yet"
+                : 
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data?.clicksByDay}>
+
+                      <CartesianGrid
+                        vertical={false}
+                        strokeDasharray="3 3"
+                        stroke="rgba(255,255,255,0.05)"
+                      />
+
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(value) =>
+                          new Date(value).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric"
+                          })
+                        }
+                        tick={{
+                          fill: "#9ca3af",
+                          fontSize: 11
+                        }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+
+                      <YAxis
+                        tick={{
+                          fill: "#9ca3af",
+                          fontSize: 11
+                        }}
+                        axisLine={false}
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
+
+                      <Tooltip
+                        contentStyle={{
+                          background: "#111118",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          borderRadius: "12px",
+                          fontSize: "12px"
+                        }}
+                        labelFormatter={(value) =>
+                          new Date(value).toLocaleDateString()
+                        }
+                      />
+
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#6366f1"
+                        strokeWidth={2.5}
+                        dot={false}
+                        activeDot={{
+                          r: 5,
+                          strokeWidth: 0,
+                          fill: "#818cf8"
+                        }}
+                        animationDuration={450}
+                      />
+
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
+              }
                </>
             )}
           </div>

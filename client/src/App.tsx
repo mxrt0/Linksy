@@ -25,7 +25,8 @@ function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/analytics/" element={<AnalyticsPage />} />
+        <Route path="/analytics/:code" element={<AnalyticsPage />} />
         <Route path="/links/new" element={<CreateLinkPage />} />
       </Route>
       

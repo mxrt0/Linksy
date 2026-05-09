@@ -6,6 +6,7 @@ import { API_URL } from "../../config/api";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { useToast } from "../../hooks/toast/useToast";
 import type { Link } from "../../types/link/Link";
+import { useNavigate } from "react-router-dom";
 
 export function DashboardPage() {
   const {
@@ -18,6 +19,7 @@ export function DashboardPage() {
   } = useLinks();
   
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 250);
@@ -300,7 +302,7 @@ export function DashboardPage() {
                       text-gray-400 dark:text-white/30
                       hover:bg-gray-100 dark:hover:bg-white/10
                       hover:text-gray-600 dark:hover:text-white
-                      transition
+                      transition cursor-pointer
                     "
                   >
                     <svg width="13" height="3" viewBox="0 0 13 3" fill="currentColor">
@@ -331,6 +333,16 @@ export function DashboardPage() {
                         className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
                       >
                         Open link
+                      </button>
+
+                      <button
+                        onClick={() => { 
+                          setOpenMenu(null);
+                          navigate(`/analytics/${link.shortCode}`);
+                        }}
+                        className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                      >
+                        View analytics
                       </button>
 
                       <button 

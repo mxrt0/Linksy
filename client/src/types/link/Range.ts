@@ -1,0 +1,1 @@
+export type AnalyticsRange = 7 | 30 | 90 | 365;

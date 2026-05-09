@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { analyticsService } from "../../services/analyticsService";
 import type { AnalyticsSummary } from "../../types/link/AnalyticsSummary";
+import type { AnalyticsRange } from "../../types/link/Range";
 
-export function useAnalytics(linkId: string | null) {
+export function useAnalytics(linkId: string | undefined, range?: AnalyticsRange) {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +14,7 @@ export function useAnalytics(linkId: string | null) {
       setLoading(true);
 
       try {
-        const result = await analyticsService.getAnalytics(linkId);
+        const result = await analyticsService.getAnalytics(linkId, range);
         if (result.success) {
             setData(result.data);
         }
@@ -23,7 +24,7 @@ export function useAnalytics(linkId: string | null) {
     };
 
     load();
-  }, [linkId]);
+  }, [linkId, range]);
 
   return { data, loading };
 }
