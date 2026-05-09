@@ -8,5 +8,5 @@ namespace Linksy.Services.Core.Contracts;
 
 public interface IAnalyticsService
 {
-    Task<ServiceResult<LinkAnalyticsDto>> GetLinkAnalyticsAsync(Guid linkId); 
+    Task<ServiceResult<LinkAnalyticsDto>> GetLinkAnalyticsAsync(Guid linkId, int days = 30); 
 }

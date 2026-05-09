@@ -7,9 +7,9 @@ namespace Linksy.Api.Controllers;
 public class AnalyticsController(IAnalyticsService analyticsService) : BaseController
 {
     [HttpGet("{linkId:guid}")]
-    public async Task<ActionResult> GetLinkAnalytics(Guid linkId)
+    public async Task<ActionResult> GetLinkAnalytics(Guid linkId, [FromQuery] int days = 30)
     {
-        var result = await analyticsService.GetLinkAnalyticsAsync(linkId);  
+        var result = await analyticsService.GetLinkAnalyticsAsync(linkId, days);  
 
         if (!result.Success)
         {

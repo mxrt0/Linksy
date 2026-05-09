@@ -12,7 +12,7 @@ public class AnalyticsService(
     IClickRepository clickRepository,
     ILinkRepository linkRepository) : IAnalyticsService
 {
-    public async Task<ServiceResult<LinkAnalyticsDto>> GetLinkAnalyticsAsync(Guid linkId)
+    public async Task<ServiceResult<LinkAnalyticsDto>> GetLinkAnalyticsAsync(Guid linkId, int days = 30)
     {
         var link = await linkRepository.FirstOrDefaultAsync(l => l.Id == linkId);
         if (link is null)
@@ -20,7 +20,10 @@ public class AnalyticsService(
             return ServiceResult<LinkAnalyticsDto>.Fail("Link not found.");
         }
 
-        var clicks = clickRepository.GetByLinkId(linkId);
+        var fromDate = DateTime.UtcNow.AddDays(-days);
+
+        var clicks = clickRepository.GetByLinkId(linkId)
+            .Where(c => c.ClickedAt >= fromDate);
 
         var grouped = clicks
             .GroupBy(c => c.ClickedAt.Date)
