@@ -252,8 +252,132 @@ export function AnalyticsPage() {
 
                     </LineChart>
                   </ResponsiveContainer>
-                </div>
+                </div>               
               }
+                    <div className="mt-7">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs uppercase tracking-widest text-gray-400 dark:text-white/30">
+          Traffic sources
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {data?.referrers.map((r) => {
+          const percentage = Math.round(
+            (r.count / (data.totalClicks || 1)) * 100
+          );
+
+          const source = r.source.toLowerCase();
+
+          return (
+            <div
+              key={r.source}
+              className="
+                p-3 rounded-xl
+                bg-gray-50 dark:bg-white/3
+                border border-gray-100 dark:border-white/5
+              "
+            >
+              <div className="flex items-center justify-between mb-2">
+
+                {/* LEFT */}
+                <div className="flex items-center gap-2 min-w-0">
+
+                  {/* ICON */}
+                  <div className="
+                    w-7 h-7 rounded-lg
+                    flex items-center justify-center
+                    bg-white dark:bg-white/5
+                    border border-gray-200 dark:border-white/10
+                    text-gray-500 dark:text-white/50
+                    shrink-0
+                  ">
+
+                    {/* GOOGLE */}
+                    {source.includes("google") && <img
+                      src="/google-icon.png"
+                      alt="Google"
+                      className="w-3.5 h-3.5 opacity-80"
+                    />}
+
+                    {/* TWITTER/X */}
+                    {source.includes("twitter") && <img
+                      src="/twitter-icon.png"
+                      alt="Google"
+                      className="w-3.5 h-3.5 opacity-80"
+                    />}
+
+                    {/* DISCORD */}
+                    {source.includes("discord") && <img
+                      src="/discord-icon.png"
+                      alt="Google"
+                      className="w-3.5 h-3.5 opacity-80"
+                    />}
+
+                    {/* DIRECT */}
+                    {source.includes("direct") && (
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                        <path
+                          d="M6 4h6v6M10 4 4 10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+
+                    {/* FALLBACK */}
+                    {!(
+                      source.includes("google") ||
+                      source.includes("twitter") ||
+                      source.includes("discord") ||
+                      source.includes("direct")
+                    ) && (
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                        <circle
+                          cx="8"
+                          cy="8"
+                          r="5.5"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                        />
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* TEXT */}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-white/80">
+                      {r.source}
+                    </p>
+
+                    <p className="text-[11px] text-gray-400 dark:text-white/30">
+                      {percentage}% of traffic
+                    </p>
+                  </div>
+                </div>
+
+                {/* RIGHT */}
+                <span className="text-xs text-gray-400 dark:text-white/40">
+                  {r.count} clicks
+                </span>
+              </div>
+
+              {/* BAR */}
+              <div className="h-1.5 rounded-full bg-gray-200 dark:bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-indigo-500"
+                  style={{
+                    width: `${percentage}%`
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
                </>
             )}
           </div>

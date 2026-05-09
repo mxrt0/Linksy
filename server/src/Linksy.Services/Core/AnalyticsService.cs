@@ -2,6 +2,7 @@
 using Linksy.Services.Core.Contracts;
 using Linksy.Services.DTOs.Link;
 using Linksy.Services.Results;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,20 +26,36 @@ public class AnalyticsService(
         var clicks = clickRepository.GetByLinkId(linkId)
             .Where(c => c.ClickedAt >= fromDate);
 
-        var grouped = clicks
+        var grouped = await clicks
             .GroupBy(c => c.ClickedAt.Date)
             .Select(g => new DailyClicksDto
             {
                 Date = g.Key,
                 Count = g.Count()
             })
-            .ToList();
+            .ToListAsync();
+
+        var referrers = await clicks
+            .GroupBy(c =>
+                c.Referer.Contains("google") ? "Google" :
+                c.Referer.Contains("twitter") ? "Twitter/X" :
+                c.Referer.Contains("discord") ? "Discord" :
+                string.IsNullOrWhiteSpace(c.Referer) ? "Direct" :
+                "Other")
+            .Select(g => new ReferrerStatDto
+            {
+                Source = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync();
 
         var result = new LinkAnalyticsDto
         {
             LinkId = linkId,
             TotalClicks = clicks.Count(),
-            ClicksByDay = grouped
+            ClicksByDay = grouped,
+            Referrers = referrers
         };
 
         return ServiceResult<LinkAnalyticsDto>.Ok(result);
