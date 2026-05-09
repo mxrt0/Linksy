@@ -63,6 +63,7 @@ public class AuthController(
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
+            Path = "/",
             Expires = DateTime.UtcNow.AddMinutes(config.GetValue<double>("Jwt:ExpiryMinutes"))
         });
 
@@ -75,7 +76,14 @@ public class AuthController(
     [HttpPost("logout")]
     public async Task<ActionResult> Logout()
     {
-        Response.Cookies.Delete("jwt");
+        Response.Cookies.Append("jwt", "", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(-1)
+        });
         return Ok();
     }
 }

@@ -33,7 +33,9 @@ async function login(request: LoginRequest): Promise<User> {
 }
 
 async function logout(): Promise<void> {
-    await apiFetch('/api/auth/logout')
+    await apiFetch('/api/auth/logout', {
+        method: 'POST'
+    })
 }
 
 async function me(): Promise<User> {
