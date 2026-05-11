@@ -17,4 +17,8 @@ public class Click
     public string IpAddress { get; set; } = null!;
     public string UserAgent { get; set; } = null!;
     public string Referer { get; set; } = null!;
+
+    public string? DeviceType { get; set; }
+    public string? Browser { get; set; }
+    public string? OperatingSystem { get; set; }
 }
