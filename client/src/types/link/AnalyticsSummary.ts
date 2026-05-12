@@ -1,4 +1,4 @@
-import type { ReferrerStat } from "./ReferrerStat";
+import type { DeviceStat, ReferrerStat } from "./AnalyticsStatTypes";
 
 export type AnalyticsSummary = {
     linkId: string;
@@ -7,4 +7,5 @@ export type AnalyticsSummary = {
       date: string;
       count: number; }[];
     referrers: ReferrerStat[];
+    devices: DeviceStat[];
 }

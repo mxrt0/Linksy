@@ -380,6 +380,140 @@ export function AnalyticsPage() {
         })}
       </div>
     </div>
+    <div className="mt-7">
+  <div className="flex items-center justify-between mb-3">
+    <p className="text-xs uppercase tracking-widest text-gray-400 dark:text-white/30">
+      Devices
+    </p>
+  </div>
+
+  <div className="space-y-2">
+    {data?.devices?.map((d) => {
+      const percentage = Math.round(
+        (d.count / (data.totalClicks || 1)) * 100
+      );
+
+      const device = d.device.toLowerCase();
+
+      return (
+        <div
+          key={d.device}
+          className="
+            p-3 rounded-xl
+            bg-gray-50 dark:bg-white/3
+            border border-gray-100 dark:border-white/5
+          "
+        >
+          <div className="flex items-center justify-between mb-2">
+
+            <div className="flex items-center gap-2 min-w-0">
+
+              {/* ICON */}
+              <div className="
+                w-7 h-7 rounded-lg
+                flex items-center justify-center
+                bg-white dark:bg-white/5
+                border border-gray-200 dark:border-white/10
+                shrink-0
+              ">
+
+                {/* MOBILE */}
+                {device === "mobile" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="7"
+                      y="2"
+                      width="10"
+                      height="20"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <circle cx="12" cy="18" r="1" fill="currentColor" />
+                  </svg>
+                )}
+
+                {/* DESKTOP */}
+                {device === "desktop" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="12"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M8 20h8"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+
+                {/* TABLET */}
+                {device === "tablet" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="5"
+                      y="2"
+                      width="14"
+                      height="20"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <circle cx="12" cy="18" r="0.8" fill="currentColor" />
+                  </svg>
+                )}
+
+                {/* OTHER */}
+                {!["mobile", "desktop", "tablet"].includes(device) && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="8"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                )}
+
+              </div>
+
+              {/* TEXT */}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-800 dark:text-white/80">
+                  {d.device}
+                </p>
+
+                <p className="text-[11px] text-gray-400 dark:text-white/30">
+                  {percentage}% of traffic
+                </p>
+              </div>
+            </div>
+
+            <span className="text-xs text-gray-400 dark:text-white/40">
+              {d.count} clicks
+            </span>
+          </div>
+
+          {/* BAR */}
+          <div className="h-1.5 rounded-full bg-gray-200 dark:bg-white/5 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-indigo-500"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
                </>
             )}
           </div>
