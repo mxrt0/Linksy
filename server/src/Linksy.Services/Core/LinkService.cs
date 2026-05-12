@@ -149,6 +149,9 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             IpAddress = data.IpAddress,
             Referer = data.Referer,
             UserAgent = data.UserAgent,
+            DeviceType = data.DeviceType,
+            Browser = data.Browser,
+            OperatingSystem = data.OperatingSystem
         };
 
         await clickRepository.AddAsync(click);

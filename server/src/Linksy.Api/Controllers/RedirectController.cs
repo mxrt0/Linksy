@@ -4,6 +4,7 @@ using Linksy.Services.DTOs.Click;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using UAParser;
 
 namespace Linksy.Api.Controllers;
 
@@ -26,11 +27,34 @@ public class RedirectController(ILinkService linkService) : ControllerBase
         {
             referrer = Request.Query["source"] == "qr" ? "qr" : string.Empty;
         }
+
+        var parser = Parser.GetDefault();
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var client = parser.Parse(userAgent);
+
+        string? deviceType = null;
+        var os = client.OS.Family?.ToLower() ?? "";
+        var deviceFamily = client.Device.Family?.ToLower() ?? "";
+
+        if (os.Contains("ios") || os.Contains("android"))
+        {
+            deviceType = "Mobile";
+        }
+        else
+        {
+            deviceType = "Desktop";
+        }
+        Console.WriteLine($"UA: {userAgent}");
+        Console.WriteLine($"Device: {client.Device.Family}");
+        Console.WriteLine($"OS: {client.OS.Family}");
         var clickData = new ClickData
         {
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
-            UserAgent = Request.Headers["User-Agent"].ToString(),
-            Referer = referrer
+            UserAgent = userAgent,
+            Referer = referrer,
+            DeviceType = deviceType,
+            Browser = client.UA.Family,
+            OperatingSystem = client.OS.Family
         };
 
         await linkService.TrackClickAsync(result.Id!.Value, clickData);

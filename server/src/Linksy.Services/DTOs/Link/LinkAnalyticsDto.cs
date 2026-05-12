@@ -10,6 +10,13 @@ public class LinkAnalyticsDto
     public int TotalClicks { get; set; }
     public List<DailyClicksDto> ClicksByDay { get; set; } = [];
     public List<ReferrerStatDto> Referrers { get; set; } = [];
+    public List<DeviceStatDto> Devices { get; set; } = [];
+}
+
+public class DeviceStatDto
+{
+    public string Device { get; set; } = null!;
+    public int Count { get; set; }
 }
 
 public class ReferrerStatDto

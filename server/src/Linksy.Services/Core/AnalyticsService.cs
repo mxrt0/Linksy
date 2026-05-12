@@ -51,12 +51,23 @@ public class AnalyticsService(
             .OrderByDescending(x => x.Count)
             .ToListAsync();
 
+        var devices = await clicks
+            .GroupBy(c => c.DeviceType ?? "Unknown")
+            .Select(g => new DeviceStatDto
+            {
+                Device = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync();
+
         var result = new LinkAnalyticsDto
         {
             LinkId = linkId,
             TotalClicks = clicks.Count(),
             ClicksByDay = grouped,
-            Referrers = referrers
+            Referrers = referrers,
+            Devices = devices
         };
 
         return ServiceResult<LinkAnalyticsDto>.Ok(result);
