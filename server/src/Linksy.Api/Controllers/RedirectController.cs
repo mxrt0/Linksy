@@ -34,7 +34,6 @@ public class RedirectController(ILinkService linkService) : ControllerBase
 
         string? deviceType = null;
         var os = client.OS.Family?.ToLower() ?? "";
-        var deviceFamily = client.Device.Family?.ToLower() ?? "";
 
         if (os.Contains("ios") || os.Contains("android"))
         {
