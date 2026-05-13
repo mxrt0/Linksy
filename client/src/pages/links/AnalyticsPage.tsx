@@ -103,7 +103,7 @@ export function AnalyticsPage() {
           <StatCard
             label="Average daily clicks"
             value={avgDailyClicks}
-            subValue={`${range}-day window`}
+            subValue={`${range != 365 ? `${range}-day window` : 'All-time'}`}
           />
 
         </div>
