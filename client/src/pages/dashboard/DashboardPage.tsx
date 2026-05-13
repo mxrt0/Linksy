@@ -220,7 +220,10 @@ export function DashboardPage() {
               </p>
             </div>
           ) : (
-            filtered.map((link) => (
+            filtered.map((link) => {
+              const isExpired = link.expiresAt && new Date(link.expiresAt) <= new Date();
+
+              return (
               <div
                 key={link.id}
                 className="
@@ -287,14 +290,22 @@ export function DashboardPage() {
                 {/* Status */}
                 <span className={`
                   text-[10px] cursor-default px-2 py-1.25 rounded-full w-fit border inline-flex items-center gap-1.5
-                  ${link.isActive
+                  ${isExpired
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+                  : link.isActive
                     ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
-                    : "bg-red-500/5 dark:bg-red-500/5border-red-500/10 text-red-500/60 dark:text-red-400/60"
+                    : "bg-red-500/5 dark:bg-red-500/5 border-red-500/10 text-red-500/60 dark:text-red-400/60"
                   }
                 `}>
-                  <span className={`w-1 h-1 cursor-default rounded-full relative top-[0.5px] ${link.isActive ? "bg-green-500" : "bg-red-400/70"}`} />
-                  {link.isActive ? "Active" : "Inactive"}
-                </span>
+                  <span className={`w-1 h-1 cursor-default rounded-full relative top-[0.5px] ${
+                     isExpired
+                      ? "bg-amber-500"
+                      : link.isActive 
+                          ? "bg-green-500" 
+                          : "bg-red-400/70"
+                  }`} />
+                  {isExpired ? "Expired" : link.isActive ? "Active" : "Inactive"}
+                  </span>
 
                 {/* Menu */}
                 <div className="relative">
@@ -369,10 +380,15 @@ export function DashboardPage() {
                         View QR code
                     </button>
 
-                      <button 
-                      onClick={() => handleToggleActive(link.id)}
-                      className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 
-                      dark:hover:bg-white/5 text-gray-700 dark:text-white/70">
+                      <button
+                        disabled={isExpired ? isExpired : false}
+                        onClick={() => handleToggleActive(link.id)}
+                        className={`w-full text-left px-3 py-2.5 text-sm transition ${
+                          isExpired
+                            ? "text-gray-300 dark:text-white/20 cursor-not-allowed"
+                            : "cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                        }`}
+                      >
                         {link.isActive ? "Deactivate" : "Activate"}
                       </button>
 
@@ -391,7 +407,7 @@ export function DashboardPage() {
                   )}
                 </div>
               </div>
-            ))
+            )})
           )}
 
         </div>

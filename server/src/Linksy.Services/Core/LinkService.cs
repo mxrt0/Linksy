@@ -133,7 +133,7 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
         if (!link.IsActive)
             return new RedirectLinkResult(RedirectLinkFailureReason.Inactive);
 
-        if (link.ExpiresAt.HasValue && link.ExpiresAt < DateTime.UtcNow)
+        if (link.ExpiresAt.HasValue && link.ExpiresAt.Value <= DateTime.UtcNow)
             return new RedirectLinkResult(RedirectLinkFailureReason.Expired);
 
         return new RedirectLinkResult(link.Id, link.OriginalUrl);
@@ -167,6 +167,7 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             OriginalUrl = link.OriginalUrl,
             ShortUrl = $"{AppConstants.ShortUrlBase}{link.ShortCode}",
             CreatedAt = link.CreatedAt,
+            ExpiresAt = link.ExpiresAt,
             IsActive = link.IsActive,
             Clicks = clickRepository.GetLinkClickCount(link.Id)
         };

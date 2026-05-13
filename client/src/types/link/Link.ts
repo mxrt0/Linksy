@@ -6,5 +6,6 @@ export interface Link {
   isActive: boolean;
   createdAt: string;
   shortUrl: string;
+  expiresAt?: string | null;
 }
 

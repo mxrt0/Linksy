@@ -13,4 +13,5 @@ public class LinkDto
     public DateTime CreatedAt { get; set; } 
     public bool IsActive { get; set; }  
     public int Clicks { get; set; }
+    public DateTime? ExpiresAt { get; set; }
 }
