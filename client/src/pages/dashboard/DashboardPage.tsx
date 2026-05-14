@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { StatCard } from "../../components/StatCard";
 import { useLinks } from "../../hooks/links/useLinks";
 import { useDebounce } from "../../hooks/dashboard/useDebounce";
-import { API_URL } from "../../config/api";
+import { API_URL, LOCAL_API_URL } from "../../config/api";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { useToast } from "../../hooks/toast/useToast";
 import type { Link } from "../../types/link/Link";
@@ -223,6 +223,25 @@ export function DashboardPage() {
             filtered.map((link) => {
               const isExpired = link.expiresAt && new Date(link.expiresAt) <= new Date();
 
+              const expiresAtDate = link.expiresAt
+                ? new Date(link.expiresAt)
+                : null;
+
+              const expiresSoon =
+                expiresAtDate &&
+                !isExpired &&
+                expiresAtDate.getTime() - Date.now() <
+                  1000 * 60 * 60 * 24 * 3;
+
+              const expiredDaysAgo =
+                expiresAtDate &&
+                isExpired
+                  ? Math.floor(
+                      (Date.now() - expiresAtDate.getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : null;
+
               return (
               <div
                 key={link.id}
@@ -243,9 +262,63 @@ export function DashboardPage() {
                     {link.originalUrl}
                   </p>
 
-                  <p className="text-gray-400 cursor-default dark:text-white/25 text-[11px] truncate mt-0.5">
-                    lnky.io/{link.shortCode}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <p className="text-gray-400 cursor-default dark:text-white/25 text-[11px] truncate">
+                      lnky.io/{link.shortCode}
+                    </p>
+                    {expiresSoon && (
+                      <div className="
+                        inline-flex items-center gap-1
+                        px-1.5 py-0.5 rounded-md
+                        bg-amber-500/10
+                        border border-amber-500/15
+                        text-[10px] text-amber-600 dark:text-amber-400
+                      ">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                          <circle
+                            cx="8"
+                            cy="8"
+                            r="5.5"
+                            stroke="currentColor"
+                            strokeWidth="1.4"
+                          />
+                          <path
+                            d="M8 4.5V8L10.5 9.5"
+                            stroke="currentColor"
+                            strokeWidth="1.4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+
+                        Expires soon
+                      </div>
+                    )}
+
+                    {isExpired && (
+                      <div className="
+                        inline-flex items-center gap-1
+                        px-1.5 py-0.5 rounded-md
+                        bg-red-500/8
+                        border border-red-500/10
+                        text-[10px] text-red-500 dark:text-red-400/90
+                      ">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                        <path
+                          d="M4 4L12 12M12 4L4 12"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+
+                      Expired
+                      {expiredDaysAgo !== null &&
+                        ` ${expiredDaysAgo}d ago`}
+                    </div>
+                  )}
+
+                </div>
                 </div>
 
                 {/* Short link + copy */}
@@ -297,13 +370,24 @@ export function DashboardPage() {
                     : "bg-red-500/5 dark:bg-red-500/5 border-red-500/10 text-red-500/60 dark:text-red-400/60"
                   }
                 `}>
-                  <span className={`w-1 h-1 cursor-default rounded-full relative top-[0.5px] ${
-                     isExpired
-                      ? "bg-amber-500"
-                      : link.isActive 
-                          ? "bg-green-500" 
+                  {isExpired ? (
+                    <svg width="8" height="8" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M4 4L12 12M12 4L4 12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ) : (
+                    <span
+                      className={`w-1 h-1 rounded-full relative top-[0.5px] ${
+                        link.isActive
+                          ? "bg-green-500"
                           : "bg-red-400/70"
-                  }`} />
+                      }`}
+                    />
+                  )}
                   {isExpired ? "Expired" : link.isActive ? "Active" : "Inactive"}
                   </span>
 
@@ -343,11 +427,16 @@ export function DashboardPage() {
                       "
                     >
                       <button
-                        onClick={() => { 
+                        disabled={isExpired ? isExpired : false}
+                        onClick={() => {
                           setOpenMenu(null);
                           window.open(`${API_URL}/r/${link.shortCode}`, "_blank");
                         }}
-                        className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                        className={`w-full text-left px-3 py-2.5 text-sm transition ${
+                          isExpired
+                            ? "text-gray-300 dark:text-white/20 cursor-not-allowed"
+                            : "cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                        }`}
                       >
                         Open link
                       </button>
@@ -363,12 +452,13 @@ export function DashboardPage() {
                       </button>
 
                       <button
+                        disabled={isExpired ? isExpired : false}
                         onClick={() => {
                           setOpenMenu(null);
 
                           setQrLink({
                             shortCode: link.shortCode,
-                            url: `http://192.168.1.4:5086/r/${link.shortCode}?source=qr`
+                            url: `${LOCAL_API_URL}/r/${link.shortCode}?source=qr`
                           });
                         }}
                         className="
