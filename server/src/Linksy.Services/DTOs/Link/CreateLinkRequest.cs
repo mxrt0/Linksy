@@ -11,5 +11,6 @@ public class CreateLinkRequest
     [Url]
     public string OriginalUrl { get; set; } = null!;
     public string ShortCode { get; set; } = null!;
+    public string? Password { get; set; }
     public LinkExpiry Expiry { get; set; }  
 }

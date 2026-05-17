@@ -7,18 +7,19 @@ using Linksy.Services.DTOs.Click;
 using Linksy.Services.DTOs.Link;
 using Linksy.Services.Results;
 using Linksy.Services.Results.Link;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Linksy.Data.Common.EntityValidation.Link;
 namespace Linksy.Services.Core;
-// TODO: Actual count of clicks, not 1
 
 public class LinkService(ILinkRepository linkRepository, IClickRepository clickRepository) : ILinkService
 {
     private const int GeneratedShortCodeLength = 7;
     private const int MaxRetryAttempts = 3;
+    private readonly PasswordHasher<Link> _hasher = new();
 
     public async Task<ServiceResult<LinkDto>> CreateLinkAsync(CreateLinkRequest request, string userId)
     {
@@ -31,14 +32,21 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             _ => null
         };
 
+        string? passwordHash = null;
         if (!string.IsNullOrWhiteSpace(request.ShortCode))
         {
+            request.ShortCode = request.ShortCode.ToLower();
             if (!Regex.IsMatch(request.ShortCode, ShortCodePattern))
             {
                 return ServiceResult<LinkDto>.Fail("Short code must contain 3-20 alphanumeric (or '-') characters.");
             }
 
             var customLink = CreateLinkEntity(request.ShortCode, request, userId, expiresAt);
+
+            passwordHash = string.IsNullOrWhiteSpace(request.Password) 
+                ? null 
+                : _hasher.HashPassword(customLink, request.Password);
+            customLink.PasswordHash = passwordHash;
 
             try
             {
@@ -56,6 +64,10 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             var shortCode = GenerateShortCode();
 
             var link = CreateLinkEntity(shortCode, request, userId, expiresAt);
+            passwordHash = string.IsNullOrWhiteSpace(request.Password)
+                ? null
+                : _hasher.HashPassword(link, request.Password);
+            link.PasswordHash = passwordHash;
 
             try
             {
@@ -136,7 +148,8 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
         if (link.ExpiresAt.HasValue && link.ExpiresAt.Value <= DateTime.UtcNow)
             return new RedirectLinkResult(RedirectLinkFailureReason.Expired);
 
-        return new RedirectLinkResult(link.Id, link.OriginalUrl);
+        bool isPasswordProtected = !string.IsNullOrWhiteSpace(link.PasswordHash);
+        return new RedirectLinkResult(link.Id, link.UserId, link.OriginalUrl, isPasswordProtected, link.ShortCode);
     }
 
     public async Task<ServiceResult> TrackClickAsync(Guid linkId, ClickData data)
@@ -169,7 +182,8 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             CreatedAt = link.CreatedAt,
             ExpiresAt = link.ExpiresAt,
             IsActive = link.IsActive,
-            Clicks = clickRepository.GetLinkClickCount(link.Id)
+            Clicks = clickRepository.GetLinkClickCount(link.Id),
+            IsPasswordProtected = !string.IsNullOrWhiteSpace(link.PasswordHash)
         };
     }
 
@@ -188,4 +202,27 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
         return sb.ToString();
     }
 
+    public async Task<ServiceResult<LinkDto>> VerifyPasswordAsync(string shortCode, string password)
+    {
+        var link = await linkRepository.GetByShortCodeAsync(shortCode);
+
+        if (link is null)
+        {
+            return ServiceResult<LinkDto>.Fail("Link not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(link.PasswordHash))
+        {
+            return ServiceResult<LinkDto>.Ok(MapToDto(link));
+        }
+
+        var result = _hasher.VerifyHashedPassword(link, link.PasswordHash, password);
+
+        if (result == PasswordVerificationResult.Success)
+        {
+            return ServiceResult<LinkDto>.Ok(MapToDto(link));
+        }
+
+        return ServiceResult<LinkDto>.Fail("Invalid password.");
+    }
 }

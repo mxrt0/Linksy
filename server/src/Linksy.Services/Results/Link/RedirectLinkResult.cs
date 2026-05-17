@@ -7,16 +7,23 @@ namespace Linksy.Services.Results.Link;
 public class RedirectLinkResult
 {
     public Guid? Id { get; }
+    public string? UserId { get; }
     public string? OriginalUrl { get; }
+    public bool IsPasswordProtected { get; }
+    public string? ShortCode { get; }
     public RedirectLinkFailureReason? FailureReason { get; }
     public string? ErrorMessage { get; }
 
     public bool Success => FailureReason is null;
 
-    public RedirectLinkResult(Guid id, string originalUrl)
+    public RedirectLinkResult(Guid id, string userId, string originalUrl,
+        bool isPasswordProtected, string shortCode)
     {
         Id = id;
         OriginalUrl = originalUrl;
+        IsPasswordProtected = isPasswordProtected;
+        UserId = userId;
+        ShortCode = shortCode;
     }
 
     public RedirectLinkResult(RedirectLinkFailureReason failureReason)

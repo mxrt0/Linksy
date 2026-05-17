@@ -16,4 +16,5 @@ public interface ILinkService
     Task<ServiceResult> DeleteLinkAsync(Guid linkId);
     Task<RedirectLinkResult> GetActiveLinkAsync(string shortCode);
     Task<ServiceResult> TrackClickAsync(Guid linkId, ClickData data);
+    Task<ServiceResult<LinkDto>> VerifyPasswordAsync(string shortCode, string password); 
 }

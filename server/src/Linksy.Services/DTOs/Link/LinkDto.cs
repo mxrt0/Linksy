@@ -11,7 +11,8 @@ public class LinkDto
     public string OriginalUrl { get; set; } = null!;
     public string ShortUrl { get; set; } = null!;
     public DateTime CreatedAt { get; set; } 
-    public bool IsActive { get; set; }  
+    public bool IsActive { get; set; } 
+    public bool IsPasswordProtected { get; set; }
     public int Clicks { get; set; }
     public DateTime? ExpiresAt { get; set; }
 }

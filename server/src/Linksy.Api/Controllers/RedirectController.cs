@@ -1,28 +1,82 @@
 ﻿using Linksy.Services.Core;
 using Linksy.Services.Core.Contracts;
 using Linksy.Services.DTOs.Click;
+using Linksy.Services.DTOs.Link;
+using Linksy.Services.Results;
+using Linksy.Services.Results.Link;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UAParser;
 
 namespace Linksy.Api.Controllers;
 
 [AllowAnonymous]
-[ApiController]
-public class RedirectController(ILinkService linkService) : ControllerBase
+[Route("r")]
+public class RedirectController(ILinkService linkService,
+    IConfiguration config, IHostEnvironment env) : BaseController
 {
-    [HttpGet("r/{shortCode}")]
+    [HttpGet("{shortCode}")]
     public async Task<ActionResult> RedirectToUrl(string shortCode)
     {
         var result = await linkService.GetActiveLinkAsync(shortCode);
         if (!result.Success)
-        {
-            return NotFound(new { error = result.ErrorMessage });
+        {           
+            var response = new { result.Success, error = result.ErrorMessage };
+            return result.FailureReason switch
+            {
+
+                RedirectLinkFailureReason.NotFound => NotFound(response),
+                RedirectLinkFailureReason.Inactive => StatusCode(410, response),
+                RedirectLinkFailureReason.Expired => StatusCode(410, response),
+                _ => BadRequest(response)
+            };           
         }
 
+        var userId = GetUserId();
+        var isOwner = userId is not null && result.UserId == userId;
+
+        if (result.IsPasswordProtected && !isOwner)
+        {
+            var cookieKey = $"lnk_auth_{shortCode}";
+            var isUnlocked = Request.Cookies[cookieKey] == "true";
+
+            if (!isUnlocked)
+            {
+                var frontendOrigin = config.GetValue<string>("Cors:AllowedOrigin");
+                return Redirect($"{frontendOrigin}/r/{shortCode}/auth");
+            }
+        }
+        return await ProcessRedirect(result.Id!.Value, result.OriginalUrl!);
+    }
+
+
+    [HttpPost("{shortCode}/unlock")]
+    public async Task<ActionResult> VerifyPassword(string shortCode, [FromBody] UnlockRequest request)
+    {
+        var result = await linkService.VerifyPasswordAsync(shortCode, request.Password);
+
+        if (!result.Success)
+        {
+            return Unauthorized(result);
+        }
+
+        Response.Cookies.Append($"lnk_auth_{shortCode}", "true", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTimeOffset.UtcNow.AddHours(12)
+        });
+
+        return Ok(); 
+    }
+
+    private async Task<ActionResult> ProcessRedirect(Guid linkId, string originalUrl)
+    {
         var referrer = Request.Headers["Referer"].ToString();
-        
+
         if (string.IsNullOrWhiteSpace(referrer))
         {
             referrer = Request.Query["source"] == "qr" ? "qr" : string.Empty;
@@ -43,9 +97,7 @@ public class RedirectController(ILinkService linkService) : ControllerBase
         {
             deviceType = "Desktop";
         }
-        Console.WriteLine($"UA: {userAgent}");
-        Console.WriteLine($"Device: {client.Device.Family}");
-        Console.WriteLine($"OS: {client.OS.Family}");
+
         var clickData = new ClickData
         {
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
@@ -56,8 +108,8 @@ public class RedirectController(ILinkService linkService) : ControllerBase
             OperatingSystem = client.OS.Family
         };
 
-        await linkService.TrackClickAsync(result.Id!.Value, clickData);
+        await linkService.TrackClickAsync(linkId, clickData);
 
-        return Redirect(result.OriginalUrl!);
+        return Redirect(originalUrl);
     }
 }
