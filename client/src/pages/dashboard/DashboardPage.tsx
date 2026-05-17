@@ -223,24 +223,15 @@ export function DashboardPage() {
             filtered.map((link) => {
               const isExpired = link.expiresAt && new Date(link.expiresAt) <= new Date();
 
-              const expiresAtDate = link.expiresAt
-                ? new Date(link.expiresAt)
-                : null;
+              // const expiresAtDate = link.expiresAt
+              //   ? new Date(link.expiresAt)
+              //   : null;
 
-              const expiresSoon =
-                expiresAtDate &&
-                !isExpired &&
-                expiresAtDate.getTime() - Date.now() <
-                  1000 * 60 * 60 * 24 * 3;
-
-              const expiredDaysAgo =
-                expiresAtDate &&
-                isExpired
-                  ? Math.floor(
-                      (Date.now() - expiresAtDate.getTime()) /
-                        (1000 * 60 * 60 * 24)
-                    )
-                  : null;
+              // const expiresSoon =
+              //   expiresAtDate &&
+              //   !isExpired &&
+              //   expiresAtDate.getTime() - Date.now() <
+              //     1000 * 60 * 60 * 24 * 3;
 
               return (
               <div
@@ -255,13 +246,28 @@ export function DashboardPage() {
               >
                 {/* URL */}
                 <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
                   <p 
                     className="text-gray-900 cursor-default dark:text-white text-sm font-medium truncate"
                     title={link.originalUrl}
                   >
                     {link.originalUrl}
                   </p>
-
+                  {link.isPasswordProtected && (
+                  <div
+                  title="Password protected"
+                  className="shrink-0 px-1.5 py-1 rounded-lg 
+                  flex items-center justify-center bg-amber-500/10 border
+                  border-amber-500/20 text-amber-600
+                    dark:text-amber-400"
+                >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+                  </div>
+                )}
+                </div>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <p className="text-gray-400 cursor-default dark:text-white/25 text-[11px] truncate">
                       lnky.io/{link.shortCode}
@@ -271,9 +277,11 @@ export function DashboardPage() {
 
                 {/* Short link + copy */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-indigo-600 dark:text-indigo-400 text-[12px] font-mono truncate">
-                    lnky.io/{link.shortCode}
-                  </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-indigo-600 dark:text-indigo-400 text-[12px] font-mono truncate">
+                      lnky.io/{link.shortCode}
+                    </span>
+                  </div>
                   <button
                     onClick={() => handleCopy(link.shortCode)}
                     disabled={copiedCode === link.shortCode}
@@ -315,48 +323,17 @@ export function DashboardPage() {
     ${
       isExpired
   ? "bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-white/40"
-        : expiresSoon
-          ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
-          : link.isActive
+        :  link.isActive
             ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
             : "bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-white/40"
     }
   `}
 >
                     {isExpired ? (
-    <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-  <circle
-    cx="8"
-    cy="8"
-    r="6"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  />
-  <path
-    d="M8 4.5V8L10.5 9.5"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
+    <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+  <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5" />
+  <path d="M7 4v3.5L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 </svg>
-  ) : expiresSoon ? (
-    <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-      <circle
-        cx="8"
-        cy="8"
-        r="6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <path
-        d="M8 4.5V8L10.5 9.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   ) : (
     <span
       className={`w-1.5 h-1.5 rounded-full ${
