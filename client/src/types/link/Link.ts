@@ -7,5 +7,6 @@ export interface Link {
   createdAt: string;
   shortUrl: string;
   expiresAt?: string | null;
+  isPasswordProtected: boolean;
 }
 

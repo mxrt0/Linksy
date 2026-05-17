@@ -53,10 +53,23 @@ async function deleteLink(id: string): Promise<ServiceResult<null>> {
     return { success: true, data: null };
 }
 
+async function checkPassword(code: string, password: string): Promise<ServiceResult<null>> {
+    const res = await apiFetch(`/r/${code}/unlock`, {
+        method: 'POST',
+        body: JSON.stringify({ password })
+    });
+
+    if (!res.ok) {
+        return await res.json();
+    }
+
+    return { success: true, data: null };
+}
 
 export const linkService = {
     create,
     getLinks,
     toggleActive,
-    deleteLink
+    deleteLink,
+    checkPassword
 }

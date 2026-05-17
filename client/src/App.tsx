@@ -7,6 +7,7 @@ import { AppLayout } from './layout/AppLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { CreateLinkPage } from './pages/links/CreateLinkPage'
 import { AnalyticsPage } from './pages/links/AnalyticsPage'
+import { LinkPasswordPage } from './pages/links/LinkPasswordPage'
 
 function App() {
 
@@ -15,7 +16,8 @@ function App() {
     <Routes>
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
-
+      <Route path="/r/:code/auth" element={<LinkPasswordPage />} />
+      
       <Route
         element={
           <ProtectedRoute>

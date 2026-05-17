@@ -13,7 +13,10 @@ export function CreateLinkPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const isDisabled = !originalUrl.trim() || isLoading;
+  const [passwordEnabled, setPasswordEnabled] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const isDisabled = !originalUrl.trim() || isLoading || (passwordEnabled && password.length < 4);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -26,6 +29,7 @@ export function CreateLinkPage() {
         originalUrl: originalUrl.trim(),
         shortCode: shortCode.trim() || undefined,
         expiry,
+        password: passwordEnabled ? password : undefined
       });
 
       navigate("/dashboard", { replace: true });
@@ -166,6 +170,60 @@ export function CreateLinkPage() {
                 Leave empty to generate a random code
               </p>
             </div>
+
+            <div className="mt-4 mb-2">
+
+  <button
+    type="button"
+    onClick={() => setPasswordEnabled(!passwordEnabled)}
+    className={`
+      flex items-center gap-2 text-sm transition cursor-pointer
+      ${passwordEnabled
+        ? "text-indigo-600 dark:text-indigo-400"
+        : "text-gray-500 dark:text-white/40"}
+    `}
+  >
+    <div className={`
+      w-4 h-4 rounded border flex items-center justify-center transition
+      ${passwordEnabled
+        ? "bg-indigo-500 border-indigo-500"
+        : "border-gray-300 dark:border-white/15"}
+    `}>
+      {passwordEnabled && (
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M3.5 8.5l3 3 6-6"
+            stroke="white"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </div>
+
+    Password protect link
+  </button>
+
+  {passwordEnabled && (
+    <div className="mt-3">
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Enter password"
+        className="
+          w-full px-3 py-2 rounded-xl
+          bg-white dark:bg-white/5
+          border border-gray-200 dark:border-white/10
+          text-sm text-gray-900 dark:text-white
+          placeholder-gray-400 dark:placeholder-white/25
+          outline-none focus:border-indigo-500/60
+        "
+      />
+    </div>
+  )}
+</div>
 
             {/* Expiry */}
             <div className="mb-6">
