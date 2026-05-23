@@ -14,17 +14,17 @@ export function LinkPasswordPage() {
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-
+    console.log('Submit hit');
     const res = await linkService.checkPassword(code, password);
 
     if (!res.success) {
         setError(res.error);
-        return;
     }
     else {
       window.location.href = `${API_URL}/r/${code}`;
     }
 
+    console.log('GFInishged')
     setLoading(false);
   };
 
