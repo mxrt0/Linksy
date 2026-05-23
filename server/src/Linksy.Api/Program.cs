@@ -46,6 +46,7 @@ builder.Services.AddScoped<IClickRepository, ClickRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAliasService, AliasService>();
 builder.Services.AddScoped<ILinkService, LinkService>();    
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();  
 

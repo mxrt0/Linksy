@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Linksy.Api.Controllers;
 
 [Authorize]
-public class LinksController(ILinkService linkService) : BaseController
+public class LinksController(ILinkService linkService, IAliasService aliasService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LinkDto>>> GetLinks()
@@ -70,5 +70,24 @@ public class LinksController(ILinkService linkService) : BaseController
             return BadRequest(result);
         }
         return NoContent();
+    }
+
+    [HttpGet("alias/check")]
+    public async Task<ActionResult<bool>> CheckAliasAvailable([FromQuery] string alias)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await aliasService.CheckAsync(alias);
+        return Ok(result);
+    }
+
+    [HttpGet("alias/preview")]
+    public ActionResult<string> GetAliasPreview()
+    {
+        return Ok(new { preview = aliasService.GeneratePreviewAlias() });
     }
 }

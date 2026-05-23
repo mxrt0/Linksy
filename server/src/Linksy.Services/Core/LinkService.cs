@@ -1,5 +1,6 @@
 ﻿using Linksy.Common;
 using Linksy.Common.Enums;
+using Linksy.Common.Utilities;
 using Linksy.Data.Models;
 using Linksy.Data.Repositories.Contracts;
 using Linksy.Services.Core.Contracts;
@@ -15,13 +16,15 @@ using System.Text.RegularExpressions;
 using static Linksy.Data.Common.EntityValidation.Link;
 namespace Linksy.Services.Core;
 
-public class LinkService(ILinkRepository linkRepository, IClickRepository clickRepository) : ILinkService
+public class LinkService(ILinkRepository linkRepository,
+    IClickRepository clickRepository, IAliasService aliasService) : ILinkService
 {
-    private const int GeneratedShortCodeLength = 7;
     private const int MaxRetryAttempts = 3;
     private readonly PasswordHasher<Link> _hasher = new();
 
-    public async Task<ServiceResult<LinkDto>> CreateLinkAsync(CreateLinkRequest request, string userId)
+    public async Task<ServiceResult<LinkDto>> CreateLinkAsync(
+    CreateLinkRequest request,
+    string userId)
     {
         DateTime? expiresAt = request.Expiry switch
         {
@@ -32,57 +35,49 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
             _ => null
         };
 
-        string? passwordHash = null;
+        string finalShortCode;
+
         if (!string.IsNullOrWhiteSpace(request.ShortCode))
         {
-            request.ShortCode = request.ShortCode.ToLower();
-            if (!Regex.IsMatch(request.ShortCode, ShortCodePattern))
+            var normalized = request.ShortCode.Trim();
+
+            var check = await aliasService.CheckAsync(normalized);
+
+            if (!check.IsAvailable)
             {
-                return ServiceResult<LinkDto>.Fail("Short code must contain 3-20 alphanumeric (or '-') characters.");
+                return ServiceResult<LinkDto>.Fail(
+                    check.Reason?.ToString() ?? "Invalid alias",
+                    check.Suggestions
+                );
             }
 
-            var customLink = CreateLinkEntity(request.ShortCode, request, userId, expiresAt);
-
-            passwordHash = string.IsNullOrWhiteSpace(request.Password) 
-                ? null 
-                : _hasher.HashPassword(customLink, request.Password);
-            customLink.PasswordHash = passwordHash;
-
-            try
-            {
-                await linkRepository.AddAsync(customLink);
-                return ServiceResult<LinkDto>.Ok(MapToDto(customLink));
-            }
-            catch (DbUpdateException)
-            {
-                return ServiceResult<LinkDto>.Fail("Custom short code is already in use.");
-            }
+            finalShortCode = normalized;
         }
-
-        for (int i = 0; i < MaxRetryAttempts; i++)
+        else
         {
-            var shortCode = GenerateShortCode();
-
-            var link = CreateLinkEntity(shortCode, request, userId, expiresAt);
-            passwordHash = string.IsNullOrWhiteSpace(request.Password)
-                ? null
-                : _hasher.HashPassword(link, request.Password);
-            link.PasswordHash = passwordHash;
-
-            try
-            {
-                await linkRepository.AddAsync(link);
-                return ServiceResult<LinkDto>.Ok(MapToDto(link));
-            }
-            catch (DbUpdateException)
-            {
-                continue;
-            }
+            finalShortCode = await aliasService.GenerateUniqueAsync();
         }
 
-        return ServiceResult<LinkDto>.Fail("Failed to generate a unique short code. Please try again.");
-    }
+        var link = CreateLinkEntity(finalShortCode, request, userId, expiresAt);
 
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            link.PasswordHash = _hasher.HashPassword(link, request.Password);
+        }
+
+        try
+        {
+            await linkRepository.AddAsync(link);
+            return ServiceResult<LinkDto>.Ok(MapToDto(link));
+        }
+        catch (DbUpdateException)
+        {
+            link.ShortCode = await aliasService.GenerateUniqueAsync(link.ShortCode);
+
+            await linkRepository.AddAsync(link);
+            return ServiceResult<LinkDto>.Ok(MapToDto(link));
+        }
+    }
     private Link CreateLinkEntity(string shortCode,
         CreateLinkRequest request,
         string userId, DateTime? expiresAt)
@@ -187,20 +182,7 @@ public class LinkService(ILinkRepository linkRepository, IClickRepository clickR
         };
     }
 
-    private string GenerateShortCode()
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        var sb = new StringBuilder(GeneratedShortCodeLength);
-
-        for (int i = 0; i < GeneratedShortCodeLength; i++)
-        {
-            var index = RandomNumberGenerator.GetInt32(chars.Length);
-            sb.Append(chars[index]);
-        }
-
-        return sb.ToString();
-    }
+    
 
     public async Task<ServiceResult<LinkDto>> VerifyPasswordAsync(string shortCode, string password)
     {

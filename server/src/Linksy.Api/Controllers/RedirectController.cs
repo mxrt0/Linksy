@@ -14,8 +14,7 @@ namespace Linksy.Api.Controllers;
 
 [AllowAnonymous]
 [Route("r")]
-public class RedirectController(ILinkService linkService,
-    IConfiguration config, IHostEnvironment env) : BaseController
+public class RedirectController(ILinkService linkService, IConfiguration config) : BaseController
 {
     [HttpGet("{shortCode}")]
     public async Task<ActionResult> RedirectToUrl(string shortCode)
