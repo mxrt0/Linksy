@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EXPIRY_OPTIONS, type Expiry } from "../../types/link/Expiry";
 import { linkService } from "../../services/linkService";
+import { AliasInput } from "../../components/alias/AliasInput";
 
 export function CreateLinkPage() {
   const navigate = useNavigate();
@@ -121,54 +122,14 @@ export function CreateLinkPage() {
             {/* Optional section */}
             <div className="border-t border-gray-200 dark:border-white/10 my-5" />
 
-            <p className="text-[10px] uppercase cursor-default tracking-widest text-gray-400 dark:text-white/20 mb-4">
-              Customise (optional)
-            </p>
-
             {/* Custom short code */}
             <div className="mb-5">
               <label className="block text-[11px] uppercase tracking-widest text-gray-500 dark:text-white/35 mb-2">
-                Custom short code
+                Short code
               </label>
 
-              <div
-                className="
-                  flex items-center overflow-hidden rounded-xl
-                  border border-gray-200 dark:border-white/10
-                  bg-gray-50 dark:bg-white/5
-                  focus-within:border-indigo-500/60
-                  focus-within:bg-indigo-500/5
-                  transition
-                "
-              >
-                <span
-                  className="
-                    px-3 py-2.5 whitespace-nowrap select-none
-                    text-sm text-gray-400 dark:text-white/25
-                    border-r border-gray-200 dark:border-white/10
-                  "
-                >
-                  lnky.io /
-                </span>
+              <AliasInput value={shortCode} onChange={setShortCode} />
 
-                <input
-                  type="text"
-                  value={shortCode}
-                  onChange={(e) => setShortCode(e.target.value)}
-                  placeholder="my-link"
-                  className="
-                    flex-1 px-3 py-2.5 bg-transparent
-                    text-sm font-mono
-                    text-gray-900 dark:text-white
-                    placeholder:text-gray-400 dark:placeholder:text-white/20
-                    outline-none
-                  "
-                />
-              </div>
-
-              <p className="text-[11px] cursor-default text-gray-400 dark:text-white/20 mt-1.5">
-                Leave empty to generate a random code
-              </p>
             </div>
 
             <div className="mt-4 mb-2">
@@ -177,7 +138,7 @@ export function CreateLinkPage() {
     type="button"
     onClick={() => setPasswordEnabled(!passwordEnabled)}
     className={`
-      flex items-center gap-2 text-sm transition cursor-pointer
+      flex items-center gap-3 text-sm transition cursor-pointer
       ${passwordEnabled
         ? "text-indigo-600 dark:text-indigo-400"
         : "text-gray-500 dark:text-white/40"}
@@ -202,13 +163,15 @@ export function CreateLinkPage() {
       )}
     </div>
 
-    Password protect link
+    🔒 Protect with password
   </button>
 
   {passwordEnabled && (
     <div className="mt-3">
+      <input type="password" className="hidden"/>
       <input
         type="password"
+        autoComplete="off"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Enter password"
@@ -226,7 +189,7 @@ export function CreateLinkPage() {
 </div>
 
             {/* Expiry */}
-            <div className="mb-6">
+            <div className="mt-4 mb-6">
               <label className="block text-[11px] uppercase tracking-widest text-gray-500 dark:text-white/35 mb-2">
                 Link expiry
               </label>
@@ -302,7 +265,7 @@ export function CreateLinkPage() {
                 disabled={isDisabled}
                 className="
                   flex-2 py-2.5 rounded-xl
-                  bg-indigo-600 hover:bg-indigo-500
+                  bg-indigo-600 not-disabled:hover:bg-indigo-500
                   text-white text-sm font-medium
                   transition cursor-pointer
                   shadow-lg shadow-indigo-500/20
