@@ -159,7 +159,7 @@ export function DashboardPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search links..."
             className="
-              w-full pl-8 pr-4 py-2 rounded-lg
+              w-full pl-8 pr-10 py-2 rounded-lg
               bg-white dark:bg-white/5
               border border-gray-200 dark:border-white/10
               text-gray-900 dark:text-white text-sm
@@ -167,7 +167,16 @@ export function DashboardPage() {
               outline-none focus:border-indigo-500/60 transition
             "
           />
-
+          <button
+            className="absolute right-3 top-1/2 -translate-y-1/2
+            text-gray-400 hover:text-gray-700
+            dark:text-gray-500 dark:hover:text-gray-300
+            transition text-right cursor-pointer text-xl"
+            onClick={() => setSearch('')}
+            title="Clear search"
+          >
+            ×
+          </button>
         </div>
 
         {/* Table */}
@@ -222,27 +231,28 @@ export function DashboardPage() {
           ) : (
             filtered.map((link) => {
               const isExpired = link.expiresAt && new Date(link.expiresAt) <= new Date();
-
-              // const expiresAtDate = link.expiresAt
-              //   ? new Date(link.expiresAt)
-              //   : null;
-
-              // const expiresSoon =
-              //   expiresAtDate &&
-              //   !isExpired &&
-              //   expiresAtDate.getTime() - Date.now() <
-              //     1000 * 60 * 60 * 24 * 3;
+              const isInactive = !link.isActive;
 
               return (
               <div
                 key={link.id}
-                className="
-                  grid grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_64px_66px_28px]
+                className={`
+                  relative grid grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_64px_66px_28px]
                   gap-3 px-4 py-3 items-center
                   border-b border-gray-100 dark:border-white/10
-                  hover:bg-gray-50 dark:hover:bg-white/5 
-                  hover:border-gray-300 dark:hover:border-white/15 transition-all duration-200
-                "
+                  transition-all duration-200
+
+                  ${
+                    isExpired
+                      ? "bg-gray-50/70 dark:bg-white/2"
+                      : isInactive
+                        ? "bg-gray-50/40 dark:bg-white/1"
+                        : ""
+                  }
+
+                  hover:bg-gray-50 dark:hover:bg-white/5
+                  hover:border-gray-300 dark:hover:border-white/15
+                `}
               >
                 {/* URL */}
                 <div className="min-w-0">
@@ -325,7 +335,9 @@ export function DashboardPage() {
   ? "bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-white/40"
         :  link.isActive
             ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
-            : "bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-white/40"
+            : isExpired 
+              ? "bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-white/40"
+              : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
     }
   `}
 >
@@ -337,7 +349,11 @@ export function DashboardPage() {
   ) : (
     <span
       className={`w-1.5 h-1.5 rounded-full ${
-        link.isActive ? "bg-green-500" : "bg-gray-400"
+        link.isActive 
+        ? "bg-green-500" 
+        : isExpired 
+          ? "bg-gray-400"
+          : "bg-amber-500"
       }`}
     />
   )}
