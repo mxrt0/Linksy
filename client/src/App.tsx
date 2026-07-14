@@ -8,31 +8,40 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { CreateLinkPage } from './pages/links/CreateLinkPage'
 import { AnalyticsPage } from './pages/links/AnalyticsPage'
 import { LinkPasswordPage } from './pages/links/LinkPasswordPage'
+import { LinkExpiredPage } from './pages/links/LinkExpiredPage'
+import { LinkNotFoundPage } from './pages/links/LinkNotFoundPage'
+import { HomePage } from './pages/HomePage'
 
 function App() {
 
   return (
     <BrowserRouter>
     <Routes>
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/r/:code/auth" element={<LinkPasswordPage />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={< HomePage />} />
+
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/r/:code/auth" element={<LinkPasswordPage />} />
       
+        <Route path="/not-found" element={<LinkNotFoundPage />} />
+        <Route path="/expired" element={<LinkExpiredPage />} />
+      </Route>   
+
       <Route
         element={
           <ProtectedRoute>
             <AppLayout />
           </ProtectedRoute>
         }
-      >
-        <Route path="/" element={<DashboardPage />} />
+      >   
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/analytics/" element={<AnalyticsPage />} />
         <Route path="/analytics/:code" element={<AnalyticsPage />} />
         <Route path="/links/new" element={<CreateLinkPage />} />
       </Route>
-      
-      {/* <Route path="*" element={<NotFoundPage />} /> */}
+
     </Routes>
     </BrowserRouter>
   )
