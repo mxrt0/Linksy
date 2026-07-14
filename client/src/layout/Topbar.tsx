@@ -10,7 +10,6 @@ export function Topbar() {
   const isActive = (path: string) => location.pathname === path;
 
   const { user, logout } = useAuth();
-  if (!user) return null;
 
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -42,12 +41,13 @@ export function Topbar() {
           border border-indigo-500/20 dark:border-indigo-500/25
         ">
           <div className="w-2 h-2 rounded-full bg-indigo-500" />
-          <span className="
+          <button 
+          className="
             text-sm font-medium tracking-tight
-            text-indigo-600 dark:text-indigo-400 cursor-default
-          ">
+            text-indigo-600 dark:text-indigo-400 cursor-pointer hover:scale-102"
+          onClick={() => navigate("/")}>
             Linksy
-          </span>
+          </button>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export function Topbar() {
               hover:scale-105 transition cursor-pointer
             "
           >
-            {user.username[0].toUpperCase()}
+            {user!.username[0].toUpperCase()}
           </button>
 
           {menuOpen && (
@@ -165,7 +165,7 @@ export function Topbar() {
                 text-gray-500 dark:text-white/40
                 border-b border-gray-200 dark:border-white/10
                 ">
-                {user.username}
+                {user!.username}
               </div>
 
               <button
