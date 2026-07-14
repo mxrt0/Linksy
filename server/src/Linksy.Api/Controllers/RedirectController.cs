@@ -19,16 +19,23 @@ public class RedirectController(ILinkService linkService, IConfiguration config)
     [HttpGet("{shortCode}")]
     public async Task<ActionResult> RedirectToUrl(string shortCode)
     {
+        var frontendOrigin = config.GetValue<string>("Cors:AllowedOrigin");
         var result = await linkService.GetActiveLinkAsync(shortCode);
+
         if (!result.Success)
         {           
             var response = new { result.Success, error = result.ErrorMessage };
             return result.FailureReason switch
             {
+                RedirectLinkFailureReason.NotFound
+                    => Redirect($"{frontendOrigin}/not-found"),
 
-                RedirectLinkFailureReason.NotFound => NotFound(response),
-                RedirectLinkFailureReason.Inactive => StatusCode(410, response),
-                RedirectLinkFailureReason.Expired => StatusCode(410, response),
+                RedirectLinkFailureReason.Expired
+                    => Redirect($"{frontendOrigin}/expired"),
+
+                RedirectLinkFailureReason.Inactive
+                    => Redirect($"{frontendOrigin}/not-found"),
+
                 _ => BadRequest(response)
             };           
         }
@@ -43,7 +50,6 @@ public class RedirectController(ILinkService linkService, IConfiguration config)
 
             if (!isUnlocked)
             {
-                var frontendOrigin = config.GetValue<string>("Cors:AllowedOrigin");
                 return Redirect($"{frontendOrigin}/r/{shortCode}/auth");
             }
         }
