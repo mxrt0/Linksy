@@ -25,6 +25,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const debouncedSearch = useDebounce(search, 250);
   const isSearching = search !== debouncedSearch;
 
@@ -52,7 +53,9 @@ export function DashboardPage() {
   }, [links, debouncedSearch]);
 
   const totalClicks = links.reduce((sum, l) => sum + l.clicks, 0);
-  const activeCount = links.filter((l) => l.isActive).length;
+  const activeCount = links.filter((link) =>
+    link.isActive && (!link.expiresAt || new Date(link.expiresAt).getTime() > currentTime)
+  ).length;
 
   const handleToggleActive = async (id: string) => {
       setOpenMenu(null);
@@ -92,6 +95,11 @@ export function DashboardPage() {
     setOpenMenu(null);
     setTimeout(() => setCopiedCode(null), 2000);
   };
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
