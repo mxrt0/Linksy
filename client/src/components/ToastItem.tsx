@@ -11,7 +11,7 @@ export function ToastItem({ toast, remove }: Props) {
 
   const remaining = useRef(toast.duration ?? 5000);
   const start = useRef(Date.now());
-  const timer = useRef<number | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (hovered) {

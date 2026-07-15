@@ -8,6 +8,7 @@ import { useToast } from "../../hooks/toast/useToast";
 import type { Link } from "../../types/link/Link";
 import { useNavigate } from "react-router-dom";
 import { QrModal } from "../../components/QrModal";
+import { EditLinkModal } from "../../components/EditLinkModal";
 
 export function DashboardPage() {
   const {
@@ -15,6 +16,7 @@ export function DashboardPage() {
     loading,
     error,
     toggleActive,
+    update,
     remove,
     restore,
   } = useLinks();
@@ -30,6 +32,7 @@ export function DashboardPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<Link | null>(null);
+  const [editTarget, setEditTarget] = useState<Link | null>(null);
   const [deleting, setDeleting] = useState(false);
 
     const [qrLink, setQrLink] = useState<{
@@ -425,6 +428,16 @@ export function DashboardPage() {
                       </button>
 
                       <button
+                        onClick={() => {
+                          setOpenMenu(null);
+                          setEditTarget(link);
+                        }}
+                        className="w-full cursor-pointer text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-white/70"
+                      >
+                        Edit link
+                      </button>
+
+                      <button
                         disabled={isExpired ? isExpired : false}
                         onClick={() => {
                           setOpenMenu(null);
@@ -493,6 +506,19 @@ export function DashboardPage() {
         url={qrLink?.url ?? null}
         onClose={() => setQrLink(null)}
       />
+      {editTarget && (
+        <EditLinkModal
+          link={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSave={async (id, request) => {
+            const result = await update(id, request);
+            if (result.success) {
+              showToast("Link updated", "success");
+            }
+            return result;
+          }}
+        />
+      )}
     </div>
   );
 }

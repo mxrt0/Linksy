@@ -7,9 +7,10 @@ import { APP_DOMAIN } from "../../config/app";
 type Props = {
   value: string;
   onChange: (value: string) => void;
+  currentAlias?: string;
 };
 
-export function AliasInput({ value, onChange }: Props) {
+export function AliasInput({ value, onChange, currentAlias }: Props) {
   const [state, setState] = useState<AliasCheckResult | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,6 +34,12 @@ export function AliasInput({ value, onChange }: Props) {
   // CHECK CUSTOM ALIAS
   // =========================
   useEffect(() => {
+    if (currentAlias && debounced.trim().toLowerCase() === currentAlias.toLowerCase()) {
+      setState({ isAvailable: true });
+      setLoading(false);
+      return;
+    }
+
     if (!debounced) {
       setState(null);
       return;

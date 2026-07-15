@@ -46,6 +46,24 @@ export function useLinks() {
     }
   };
 
+  const update = async (id: string, request: Parameters<typeof linkService.update>[1]) => {
+    try {
+      const result = await linkService.update(id, request);
+
+      if (!result.success) {
+        setError(result.error);
+        return result;
+      }
+
+      setLinks((prev) => prev.map((link) => link.id === id ? result.data : link));
+      return result;
+    } catch {
+      const error = "Failed to update link";
+      setError(error);
+      return { success: false as const, error };
+    }
+  };
+
 const remove = async (id: string) => {
   const target = links.find((l) => l.id === id);
 
@@ -96,6 +114,7 @@ const remove = async (id: string) => {
     loading,
     error,
     toggleActive,
+    update,
     remove,
     restore,
     addLocal

@@ -1,6 +1,7 @@
 import { apiFetch } from "../api/apiClient";
 import type { CreateLinkRequest } from "../types/link/CreateLinkRequest";
 import type { Link } from "../types/link/Link";
+import type { UpdateLinkRequest } from "../types/link/UpdateLinkRequest";
 import type { ServiceResult } from "../types/services/ServiceResult";
 
 async function getLinks(): Promise<ServiceResult<Link[]>> {
@@ -41,6 +42,20 @@ async function toggleActive(id: string): Promise<ServiceResult<Link>> {
     return {success: true, data};
 }
 
+async function update(id: string, request: UpdateLinkRequest): Promise<ServiceResult<Link>> {
+    const res = await apiFetch(`/api/links/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(request)
+    });
+
+    if (!res.ok) {
+        return await res.json();
+    }
+
+    const data = await res.json() as Link;
+    return { success: true, data };
+}
+
 async function deleteLink(id: string): Promise<ServiceResult<null>> {
     const res = await apiFetch(`/api/links/${id}`, {
         method: 'DELETE'
@@ -70,6 +85,7 @@ export const linkService = {
     create,
     getLinks,
     toggleActive,
+    update,
     deleteLink,
     checkPassword
 }
