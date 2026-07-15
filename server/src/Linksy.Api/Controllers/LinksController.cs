@@ -50,6 +50,25 @@ public class LinksController(ILinkService linkService, IAliasService aliasServic
         return Ok(result.Data);
     }
 
+    [HttpPut("{linkId:guid}")]
+    public async Task<ActionResult<LinkDto>> UpdateLink(Guid linkId, UpdateLinkRequest request)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await linkService.UpdateLinkAsync(linkId, request, userId);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result.Data);
+    }
+
     [HttpPatch("{linkId}")]
     public async Task<ActionResult<LinkDto>> ToggleLinkActive(Guid linkId)
     {

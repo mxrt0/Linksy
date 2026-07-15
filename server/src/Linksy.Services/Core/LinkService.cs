@@ -118,6 +118,62 @@ public class LinkService(ILinkRepository linkRepository,
         return ServiceResult<LinkDto>.Ok(MapToDto(link));
     }
 
+    public async Task<ServiceResult<LinkDto>> UpdateLinkAsync(
+        Guid linkId,
+        UpdateLinkRequest request,
+        string userId)
+    {
+        var link = await linkRepository.FirstOrDefaultAsync(
+            l => l.Id == linkId && l.UserId == userId);
+
+        if (link is null)
+        {
+            return ServiceResult<LinkDto>.Fail("Link not found.");
+        }
+
+        var requestedShortCode = request.ShortCode.Trim();
+
+        if (!string.Equals(link.ShortCode, requestedShortCode, StringComparison.OrdinalIgnoreCase))
+        {
+            var aliasCheck = await aliasService.CheckAsync(requestedShortCode);
+
+            if (!aliasCheck.IsAvailable)
+            {
+                return ServiceResult<LinkDto>.Fail(
+                    aliasCheck.Reason?.ToString() ?? "Invalid alias",
+                    aliasCheck.Suggestions
+                );
+            }
+
+            link.ShortCode = requestedShortCode;
+        }
+
+        link.OriginalUrl = request.OriginalUrl;
+        link.ExpiresAt = request.Expiry switch
+        {
+            LinkExpiry.Never => null,
+            LinkExpiry.OneDay => DateTime.UtcNow.AddDays(1),
+            LinkExpiry.SevenDays => DateTime.UtcNow.AddDays(7),
+            LinkExpiry.ThirtyDays => DateTime.UtcNow.AddDays(30),
+            _ => null
+        };
+        link.IsActive = request.IsActive;
+        link.UpdatedAt = DateTime.UtcNow;
+
+        if (request.RemovePassword)
+        {
+            link.PasswordHash = null;
+        }
+        else if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            link.PasswordHash = _hasher.HashPassword(link, request.Password);
+        }
+
+        await linkRepository.UpdateAsync(link);
+
+        return ServiceResult<LinkDto>.Ok(MapToDto(link));
+    }
+
     public async Task<ServiceResult> DeleteLinkAsync(Guid linkId)
     {
         var success = await linkRepository.DeleteAsync(linkId);

@@ -21,6 +21,12 @@ public class LinkRepository(ApplicationDbContext context) : ILinkRepository
         return await context.Links.AnyAsync(predicate);
     }
 
+    public async Task UpdateAsync(Link link)
+    {
+        context.Links.Update(link);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<bool> DeleteAsync(Guid linkId)
     {
         var link = await FirstOrDefaultAsync(l => l.Id == linkId);
