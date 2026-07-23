@@ -12,7 +12,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   message: string,
   type: ToastType = "info",
   action?: ToastAction,
-  duration = 5000
+  duration = 3000
   ) => {
     const id = crypto.randomUUID();
 
@@ -20,7 +20,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 6000);
+    }, duration);
   };
 
   const removeToast = (id: string) => {

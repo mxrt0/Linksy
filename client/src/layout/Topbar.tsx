@@ -169,6 +169,21 @@ export function Topbar() {
               </div>
 
               <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/settings");
+                }}
+                className="
+                  w-full text-left px-3 py-2.5 text-sm
+                  text-gray-700 dark:text-white/70
+                  hover:bg-gray-50 dark:hover:bg-white/5
+                  transition cursor-pointer
+                "
+              >
+                Account settings
+              </button>
+
+              <button
                 onClick={handleLogout}
                 className="
                   w-full text-left px-3 py-2.5 text-sm

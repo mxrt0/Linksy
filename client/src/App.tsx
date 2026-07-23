@@ -11,6 +11,7 @@ import { LinkPasswordPage } from './pages/links/LinkPasswordPage'
 import { LinkExpiredPage } from './pages/links/LinkExpiredPage'
 import { LinkNotFoundPage } from './pages/links/LinkNotFoundPage'
 import { HomePage } from './pages/HomePage'
+import { AccountSettingsPage } from './pages/account/AccountSettingsPage'
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="/analytics/" element={<AnalyticsPage />} />
         <Route path="/analytics/:code" element={<AnalyticsPage />} />
         <Route path="/links/new" element={<CreateLinkPage />} />
+        <Route path="/settings" element={<AccountSettingsPage />} />
       </Route>
 
     </Routes>
