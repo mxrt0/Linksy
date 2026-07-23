@@ -1,0 +1,63 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Check Git Status",
+			"type": "shell",
+			"command": "git status",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "Show Account Settings Diffs",
+			"type": "shell",
+			"command": "git diff -- src/pages/account/AccountSettingsPage.tsx src/services/accountService.ts src/types/auth/ProfileSettings.ts || true",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Git Diff Stat",
+			"type": "shell",
+			"command": "git diff --stat -- src/pages/account/AccountSettingsPage.tsx src/services/accountService.ts src/types/auth/ProfileSettings.ts; echo '---done---'",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Git Branch and Remote",
+			"type": "shell",
+			"command": "git branch --show-current && git remote -v",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Show Account Settings Diff",
+			"type": "shell",
+			"command": "git diff -- src/pages/account/AccountSettingsPage.tsx | sed -n '1,120p'",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Specific Git Status",
+			"type": "shell",
+			"command": "git status --short src/pages/account/AccountSettingsPage.tsx src/pages/account/AccountSettingsPage.test.ts src/services/accountService.ts src/types/auth/ProfileSettings.ts && echo '---' && git diff --stat -- src/pages/account/AccountSettingsPage.tsx src/pages/account/AccountSettingsPage.test.ts src/services/accountService.ts src/types/auth/ProfileSettings.ts",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Show Exact Diff",
+			"type": "shell",
+			"command": "git diff -- src/pages/account/AccountSettingsPage.tsx src/pages/account/AccountSettingsPage.test.ts src/services/accountService.ts src/types/auth/ProfileSettings.ts | Out-String -Stream | Select-Object -First 200",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

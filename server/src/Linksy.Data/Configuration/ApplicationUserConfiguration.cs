@@ -22,5 +22,9 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
         builder
             .Property(u => u.Email)
             .HasMaxLength(EmailMaxLength);
+
+        builder
+           .Property(u => u.DisplayName)
+           .HasMaxLength(DisplayNameMaxLength);
     }
 }

@@ -10,6 +10,10 @@ public static class EntityValidation
     {
         public const int UserNameMinLength = 3;
         public const int UserNameMaxLength = 30;
+
+        public const int DisplayNameMinLength = 2;
+        public const int DisplayNameMaxLength = 50;
+
         public const string UserNamePattern = "^[a-zA-Z0-9_]+$";
 
         public const int EmailMaxLength = 254;
