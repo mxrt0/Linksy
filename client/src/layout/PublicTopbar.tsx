@@ -50,7 +50,7 @@ export function PublicTopbar() {
             transition cursor-pointer
           "
         >
-          Log in
+          Sign in
         </button>
 
 

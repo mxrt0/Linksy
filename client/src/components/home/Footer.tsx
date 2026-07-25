@@ -1,7 +1,7 @@
 export function Footer() {
   return (
     <footer className="
-        py-2
+        py-4
         border-t border-gray-200 dark:border-white/10
         ">
         <div className="

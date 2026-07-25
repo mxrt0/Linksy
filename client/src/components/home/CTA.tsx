@@ -4,23 +4,18 @@ export function CTA() {
   return (
     <section className="pb-28">
 
-      <div className="rounded-3xl bg-indigo-500 text-white p-16 text-center">
-
-        <h2 className="text-4xl font-bold">
-          Ready to shorten your first link?
-        </h2>
-
-        <p className="mt-5 text-indigo-100">
-          Join Linksy and start sharing smarter.
+      <div className="rounded-4xl border border-slate-200 bg-white p-16 text-center shadow-sm dark:border-white/10 dark:bg-slate-950">
+        <p className="text-sm uppercase tracking-[0.35em] text-indigo-500">Ready to go live?</p>
+        <h2 className="mt-4 text-4xl font-semibold text-slate-900 dark:text-white">Launch better links faster.</h2>
+        <p className="mt-5 text-slate-600 max-w-2xl mx-auto dark:text-slate-300">
+          Start shortening, securing, and analyzing your links from one elegant dashboard.
         </p>
-
         <Link
           to="/register"
-          className="inline-block mt-10 px-6 py-3 rounded-xl bg-white text-indigo-600 font-medium hover:bg-gray-100 transition"
+          className="inline-flex items-center justify-center gap-2 mt-10 rounded-full bg-indigo-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400"
         >
           Get Started
         </Link>
-
       </div>
 
     </section>
